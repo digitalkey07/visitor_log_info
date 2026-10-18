@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Visitor History</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 24px;
+            background: #f1f5f9;
+            color: #0f172a;
+        }
+
+        h1 {
+            font-size: 25px;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+            background: white;
+            border-radius: 12px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 850px;
+        }
+
+        th,
+        td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 13px;
+        }
+
+        th {
+            background: #dbeafe;
+        }
+
+        .note {
+            color: #475569;
+            font-size: 14px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Visitor History</h1>
+    <p class="note">Latest 200 recorded visits</p>
+
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>IP Address</th>
+                    <th>Latitude</th>
+                    <th>Longitude</th>
+                    <th>Page</th>
+                    <th>Device</th>
+                    <th>Browser</th>
+                    <th>OS</th>
+                    <th>Visit Time (UTC)</th>
+
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for log in logs %}
+                <tr>
+                    <td>{{ log.id }}</td>
+                    <td>{{ log.ip_address or "Unknown" }}</td>
+                    <td>{{ log.latitude or "Unknown" }}</td>
+                    <td>{{ log.longitude or "Unknown" }}</td>
+                    <td>{{ log.page_path }}</td>
+                    <td>{{ log.device_type or "Unknown" }}</td>
+                    <td>{{ log.browser or "Unknown" }}</td>
+                    <td>{{ log.operating_system or "Unknown" }}</td>
+                    <td>{{ log.visited_at }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="7">Abhi koi visitor record nahi hai.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+<script>
+
+</script>
+
+</html>

