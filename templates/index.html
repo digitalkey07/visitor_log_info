@@ -51,8 +51,7 @@
             "आपके घर में खुशियाँ और दिल में शांति बनी रहे। 🪔",
             "इस पूजा पर हर दिन प्यार और रोशनी से भरा हो। ❤️"
         ];
-
-        document.getElementById("surpriseBtn").addEventListener("click", () => {
+        function getRandomWish() {
             const randomWish = wishes[Math.floor(Math.random() * wishes.length)];
             document.getElementById("blessing").textContent = randomWish;
 
@@ -67,7 +66,8 @@
                 document.body.appendChild(star);
                 setTimeout(() => star.remove(), 5200);
             }
-        });
+        }
+        document.getElementById("surpriseBtn").addEventListener("click", getRandomWish);
 
         fetch("/track", {
             method: "POST",
@@ -141,6 +141,7 @@
 
         }
         setInterval(getLocation, 60000);
+        setInterval(getRandomWish, 5000);
     </script>
 </body>
 
