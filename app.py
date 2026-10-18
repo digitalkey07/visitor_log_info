@@ -27,4 +27,4 @@ def home():
 if __name__ == "__main__":
     create_table() 
     # migrate_database()
-    app.run()
+    app.run(port=5000,host="0.0.0.0", debug=True)
