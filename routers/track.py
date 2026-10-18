@@ -1,4 +1,5 @@
 from math import e
+import re
 
 from flask import  Blueprint, request, jsonify
 import ipaddress
@@ -96,11 +97,16 @@ def track_visitor():
                     device, browser, os_name
                 ))
                 message = "New user data inserted"
+        if exist_user:
+            return jsonify({
+                "status": "success",
+                "message": message,
+                "visitor_id": exist_user["id"] if exist_user else conn.execute("SELECT last_insert_rowid()").fetchone()[0]
+            }), 201
 
     return jsonify({
         "status": "success",
-        "message": message,
-        "visitor_id": exist_user["id"] if exist_user else conn.execute("SELECT last_insert_rowid()").fetchone()[0]
+        "message": message
     }), 201
 
 
