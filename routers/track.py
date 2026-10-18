@@ -1,3 +1,5 @@
+from math import e
+
 from flask import  Blueprint, request, jsonify
 import ipaddress
 from datetime import datetime, timezone
@@ -50,6 +52,7 @@ def detect_device(ua):
 @track_bp.route("/track", methods=["POST"])
 def track_visitor():
     message = None
+    exist_user = None
     data = request.get_json(silent=True) or {}
 
     # Frontend sirf path bheje; query parameters store na hon.
