@@ -96,7 +96,8 @@ def track_visitor():
 
     return jsonify({
         "status": "success",
-        "message": message
+        "message": message,
+        "visitor_id": exist_user["id"] if exist_user else conn.execute("SELECT last_insert_rowid()").fetchone()[0]
     }), 201
 
 

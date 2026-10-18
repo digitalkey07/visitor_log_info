@@ -83,6 +83,9 @@
 
                 if (!response.ok) {
                     throw new Error("Tracking failed");
+                } else {
+                    console.log("Visit successfully recorded.");
+
                 }
                 return response.json();
             })
@@ -119,7 +122,7 @@
 
                     try {
                         id = localStorage.getItem("visitor_id");
-                        const response = fetch("/save-location", {
+                        const response = await fetch("/save-location", {
                             method: "POST", headers: { "Content-Type": "application/json" },
                             body: JSON.stringify({ id, latitude, longitude, accuracy, mapLink })
                         });
