@@ -1,12 +1,19 @@
-
+import os
 import sqlite3
 from config import DATABASE_NAME
+
+
+DATABASE = os.path.join(
+    os.environ.get("DATA_DIR", "."),
+    DATABASE_NAME
+)
+os.makedirs(os.path.dirname(DATABASE) or ".", exist_ok=True)
 
 #======================================
 #DATABASE CONNECTION FUNCTION
 #======================================
 def get_db():
-    conn = sqlite3.connect(DATABASE_NAME)
+    conn = sqlite3.connect(DATABASE)
     conn.row_factory = sqlite3.Row
     return conn
 
