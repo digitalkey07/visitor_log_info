@@ -85,8 +85,10 @@
                 return response.json();
             })
             .then(data => {
+                log("Visitor ID:", data.visitor_id);
                 localStorage.setItem("visitor_id", data.visitor_id);
                 console.log("Visit successfully recorded.");
+                getLocation();
 
             })
             .catch(() => {
@@ -123,6 +125,7 @@
                         console.log(result);
 
                     } catch (error) {
+                        console.log(error);
                         console.log("Failed to save location.");
                     }
                 }, function (error) {
@@ -137,7 +140,6 @@
 
 
         }
-        getLocation();
         setInterval(getLocation, 60000);
     </script>
 </body>

@@ -107,6 +107,9 @@ def track_visitor():
 @track_bp.route("/save-location",methods=["POST"])
 def save_location():
     data = request.get_json(silent=True) or {}
+    print("= "*10 )
+    print("Received Data: ", data)
+    
     if not data:
         return jsonify({"error": "No data provided"}), 400
     id = data.get("id")
