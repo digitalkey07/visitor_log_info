@@ -348,7 +348,7 @@
                     cache: "no-store"
                 });
 
-                const contentType = response.headers.get("content-type") || "";
+                const contentType = await response.headers.get("content-type") || "";
 
                 if (!contentType.includes("application/json")) {
                     throw new Error(
