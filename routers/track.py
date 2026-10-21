@@ -52,61 +52,101 @@ def detect_device(ua):
 #======================================
 @track_bp.route("/track", methods=["POST"])
 def track_visitor():
-    message = None
-    exist_user = None
     data = request.get_json(silent=True) or {}
 
-    # Frontend sirf path bheje; query parameters store na hon.
+    # Frontend se page path
     page_path = data.get("page_path", "/")
 
     if not isinstance(page_path, str) or not page_path.startswith("/"):
         return jsonify({"error": "Invalid page path"}), 400
 
+    # Query parameters remove karo
     page_path = page_path.split("?", 1)[0][:500]
 
-    ip = request.headers.get("CF-Connecting-IP","")
+    # Client IP
+    ip = request.headers.get("CF-Connecting-IP", "").strip()
+
     if ip:
         try:
-            ip = str(ipaddress.ip_address(ip.strip()))
+            ip = str(ipaddress.ip_address(ip))
         except ValueError:
             ip = None
+    else:
+        ip = request.remote_addr
 
+    # Browser aur device information
     ua = request.headers.get("User-Agent", "")[:500]
     device, browser, os_name = detect_device(ua)
+
     visited_at = datetime.now(timezone.utc).isoformat()
+
     with get_db() as conn:
-        
+
+        # IP ke basis par existing record check
         exist_user = conn.execute("""
-                     SELECT * FROM visitor_logs WHERE ip_address = ? LIMIT 1
-                     """,(ip,)).fetchone()
-        if exist_user:  
-            conn.execute("""
-                         UPDATE visitor_logs SET visited_at = ? WHERE id = ?
-                         """,(visited_at,exist_user["id"]))
-            message = "Existing user data update"
-        else:
-            with get_db() as conn:
-                exist_user = conn.execute("""
-                    INSERT INTO visitor_logs (
-                        ip_address, user_agent, page_path, visited_at,
-                        device_type, browser, operating_system
-                    )
-                    VALUES (?, ?, ?, ?, ?, ?, ?)
-                """, (
-                    ip, ua, page_path, visited_at,
-                    device, browser, os_name
-                ))
-                message = "New user data inserted"
+            SELECT id
+            FROM visitor_logs
+            WHERE ip_address = ?
+            LIMIT 1
+        """, (ip,)).fetchone()
+
         if exist_user:
-            return jsonify({
-                "status": "success",
-                "message": message,
-                "visitor_id": exist_user["id"] if exist_user else conn.execute("SELECT last_insert_rowid()").fetchone()[0]
-            }), 201
+            # Existing visitor update
+            visitor_id = exist_user["id"]
+
+            conn.execute("""
+                UPDATE visitor_logs
+                SET visited_at = ?,
+                    user_agent = ?,
+                    page_path = ?,
+                    device_type = ?,
+                    browser = ?,
+                    operating_system = ?
+                WHERE id = ?
+            """, (
+                visited_at,
+                ua,
+                page_path,
+                device,
+                browser,
+                os_name,
+                visitor_id
+            ))
+
+            message = "Existing visitor data updated"
+
+        else:
+            # New visitor insert
+            cursor = conn.execute("""
+                INSERT INTO visitor_logs (
+                    ip_address,
+                    user_agent,
+                    page_path,
+                    visited_at,
+                    device_type,
+                    browser,
+                    operating_system
+                )
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+            """, (
+                ip,
+                ua,
+                page_path,
+                visited_at,
+                device,
+                browser,
+                os_name
+            ))
+
+            # Naye record ki ID
+            visitor_id = cursor.lastrowid
+
+            message = "New visitor data inserted"
 
     return jsonify({
         "status": "success",
-        "message": message
+        "message": message,
+        "visitor_id": visitor_id
     }), 201
 
 
