@@ -15,77 +15,155 @@ auth_bp = Blueprint('auth',__name__)
 
 @auth_bp.route("/login", methods=["GET", "POST"])
 def login():
-    if request.method == "POST":
-        username = request.form.get("username")
-        password = request.form.get("password")
-        
-        with get_db() as conn:
-            user = conn.execute("""
-                                SELECT id,username,password,user_type,shared_id FROM users WHERE username = ?
-                                """,(username,)).fetchone()
-        if user and check_password_hash(user["password"],password):
-            token_data = {
-                "id":user["id"],
-                "shared_id":user["shared_id"]
-            }
-            token = create_token(token_data)
-            
-            return jsonify({
-                "status":"success",
-                "message":"Login successful",
-                "token":token
-            })
-            
-    return render_template("login.html")
 
-#======================================
-#REGISTER API
-#======================================
+    if request.method == "GET":
+        return render_template("login.html")
+
+    # JSON request receive karo
+    data = request.get_json(silent=True) or {}
+
+    username = data.get("username", "").strip().lower()
+    password = data.get("password", "")
+
+    if not username or not password:
+        return jsonify({
+            "status": "error",
+            "error": "Username and password are required."
+        }), 400
+
+    if len(username) < 3 or len(username) > 50:
+        return jsonify({
+            "status": "error",
+            "error": "Invalid username."
+        }), 400
+
+    if len(password) < 8:
+        return jsonify({
+            "status": "error",
+            "error": "Invalid username or password."
+        }), 401
+
+    with get_db() as conn:
+        user = conn.execute("""
+            SELECT id, username, password, user_type, shared_id
+            FROM users
+            WHERE username = ?
+        """, (username,)).fetchone()
+
+    # Username/password verify karo
+    if not user or not check_password_hash(user["password"], password):
+        return jsonify({
+            "status": "error",
+            "error": "Invalid username or password."
+        }), 401
+
+    # Encrypted token create karo
+    token_data = {
+        "id": user["id"],
+        "shared_id": user["shared_id"]
+    }
+
+    token = create_token(token_data)
+
+    return jsonify({
+        "status": "success",
+        "message": "Login successful",
+        "token": token,
+        "user": {
+            "id": user["id"],
+            "username": user["username"],
+            "user_type": user["user_type"]
+        }
+    }), 200
+
+
+# ======================================
+# REGISTER API
+# ======================================
+
 @auth_bp.route("/register", methods=["GET", "POST"])
 def register():
-    if request.method == "POST":
-        username = request.form.get("username", "").strip().lower()
-        password = request.form.get("password", "")
-        
 
-        if len(username) < 3 or len(username) > 50:
-            return render_template(
-                "register.html",
-                error="Invalid Username"
-            )
+    if request.method == "GET":
+        return render_template("register.html")
 
-        if len(password) < 8:
-            return render_template(
-                "register.html",
-                error="Password minimum 8 characters"
-            )
+    # JSON data receive karo
+    data = request.get_json(silent=True) or {}
 
-        password_hash = generate_password_hash(password)
+    username = data.get("username", "").strip().lower()
+    password = data.get("password", "")
+  
 
-        try:
-            user_type = 'user'
-            if EMAIL and username == EMAIL.strip().lower():
-                user_type = "admin"
-                
-            with get_db() as conn:
-                user = conn.execute("""
-                    SELECT id, username FROM users WHERE username = ?
-                    """,(username,)).fetchone()
-                
-                if user:
-                    return redirect("/login")
-                shared_id = secrets.token_urlsafe(16)
-                conn.execute("""
-                    INSERT INTO users (username, password, user_type, shared_id)
-                    VALUES (?, ?, ?)
-                """, (username, password_hash, user_type,shared_id))
+    if not username or not password:
+        return jsonify({
+            "error": "Username and password are required."
+        }), 400
 
-        except sqlite3.IntegrityError:
-            return render_template(
-                "register.html",
-                error="Username already exists"
-            )
+    if len(username) < 3 or len(username) > 50:
+        return jsonify({
+            "error": "Username must be 3 to 50 characters."
+        }), 400
 
-        return redirect("/login")
+    if len(password) < 8:
+        return jsonify({
+            "error": "Password must be at least 8 characters."
+        }), 400
 
-    return render_template("register.html")
+    password_hash = generate_password_hash(password)
+
+    try:
+        with get_db() as conn:
+
+            # Check existing username
+            user = conn.execute("""
+                SELECT id FROM users
+                WHERE username = ?
+            """, (username,)).fetchone()
+
+            if user:
+                return jsonify({
+                    "error": "Username already exists."
+                }), 409
+
+            # Default user role
+            user_type = "user"
+            if EMAIL and EMAIL == username:
+                user_type = 'admin'
+
+            # NOTE: Email ko username ke roop mein use karne se
+            # admin role automatic dena tabhi safe hai jab
+            # email ownership verify ki gayi ho.
+            # Public registration mein user_type = "user" rakho.
+
+            shared_id = secrets.token_urlsafe(16)
+
+            conn.execute("""
+                INSERT INTO users (
+                    username,
+                    password,
+                    user_type,
+                    shared_id
+                )
+                VALUES (?, ?, ?, ?)
+            """, (
+                username,
+                password_hash,
+                user_type,
+                shared_id
+            ))
+
+        return jsonify({
+            "status": "success",
+            "message": "Registration successful."
+        }), 201
+
+    except sqlite3.IntegrityError:
+        return jsonify({
+            "error": "Username already exists."
+        }), 409
+
+    except sqlite3.Error:
+      
+        return jsonify({
+            "error": "Database error. Please try again."
+        }), 500

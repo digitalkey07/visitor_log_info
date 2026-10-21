@@ -42,42 +42,73 @@
     </div>
 
 </body>
+
 <script>
-    const registerForm = document.querySelector('form');
-    registerForm.addEventListener('submit', async function (e) {
-        const username = document.getElementById('username').value.trim();
-        const password = document.getElementById('password').value.trim();
-        const confirmPassword = document.getElementById('confirm_password').value.trim();
-        if (password != confirmPassword) {
-            confirmPassword.error = "Passwords do not match.";
-            confirmPassword.focus();
-        } else {
-            try {
-                fetch('/register', {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({ "username": username, "password": password })
-                }).then((response) => {
-                    if (response.ok) {
-                        window.location.href = "/login";
-                    } else {
-                        response.json().then((data) => {
-                            alert(data.error);
-                        });
-                    }
-                });
+    const registerForm = document.querySelector("form");
+
+    const usernameInput = document.getElementById("username");
+    const passwordInput = document.getElementById("password");
+    const confirmPasswordInput = document.getElementById("confirm_password");
+    const registerBtn = document.getElementById("register_btn");
+
+    registerForm.addEventListener("submit", async function (e) {
+        // Normal form submission roko
+        e.preventDefault();
+
+        const username = usernameInput.value.trim();
+        const password = passwordInput.value;
+        const confirmPassword = confirmPasswordInput.value;
+        console.log("userName: " + username);
+        console.log("password: " + password);
 
 
+        // Purana validation message clear karo
+        confirmPasswordInput.setCustomValidity("");
 
-            } catch (error) {
-                console.error("Error:", error);
-                alert("An error occurred. Please try again.");
-            }
+        // Password match check
+        if (password !== confirmPassword) {
+            confirmPasswordInput.setCustomValidity(
+                "Passwords do not match."
+            );
+
+            confirmPasswordInput.reportValidity();
+            confirmPasswordInput.focus();
+            return;
         }
 
-    })
+        try {
+            registerBtn.disabled = true;
+            registerBtn.textContent = "Registering...";
+
+            const response = await fetch("/register", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    username: username,
+                    password: password
+                })
+            });
+
+            const data = await response.json();
+            console.log(response);
+
+            if (response.ok) {
+                window.location.href = "/login";
+            } else {
+                alert(data.error || "Registration failed.");
+            }
+
+        } catch (error) {
+            console.error("Registration error:", error);
+            alert("Server se connection nahi ho paya. Please try again.");
+
+        } finally {
+            registerBtn.disabled = false;
+            registerBtn.textContent = "Register";
+        }
+    });
 </script>
 
 </html>
