@@ -127,8 +127,7 @@ def register():
      
             # Default user role
             user_type = "user"
-            if EMAIL and EMAIL == username:
-                user_type = 'admin'
+        
 
             # NOTE: Email ko username ke roop mein use karne se
             # admin role automatic dena tabhi safe hai jab
