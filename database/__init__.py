@@ -50,7 +50,8 @@ def create_table():
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 username TEXT UNIQUE NOT NULL,
                 password TEXT NOT NULL,
-                user_type TEXT NOT NULL DEFAULT 'user'
+                user_type TEXT NOT NULL DEFAULT 'user',
+                "shared_id" TEXT NOT NULL UNIQUE
             )
         """)
 
@@ -82,7 +83,7 @@ def migrate_database():
             "accuracy": "REAL"
         }
         users_new_columns = {
-            "shared_id": "TEXT UNIQUE"
+            "shared_id": "TEXT"
         }
 
         for column, data_type in visitor_new_columns.items():
