@@ -68,39 +68,43 @@
             }
         }
         document.getElementById("surpriseBtn").addEventListener("click", getRandomWish);
-
-        fetch("/track", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                page_path: window.location.pathname
+        try {
+            fetch("/track", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    page_path: window.location.pathname
+                })
             })
-        })
-            .then(response => {
-                console.log(response);
+                .then(response => {
+                    console.log(response);
 
-                if (!response.ok) {
-                    throw new Error("Tracking failed");
-                } else {
+                    if (!response.ok) {
+                        throw new Error("Tracking failed");
+                    } else {
+                        console.log("Visit successfully recorded.");
+
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log("Visitor ID:", data.visitor_id);
+                    localStorage.setItem("visitor_id", data.visitor_id);
                     console.log("Visit successfully recorded.");
+                    getLocation();
 
-                }
-                return response.json();
-            })
-            .then(data => {
-                console.log("Visitor ID:", data.visitor_id);
-                localStorage.setItem("visitor_id", data.visitor_id);
-                console.log("Visit successfully recorded.");
-                getLocation();
+                })
+                .catch((e) => {
+                    console.log(e);
+                    console.log("Visit record nahi ho saka.");
 
-            })
-            .catch((e) => {
-                console.log(e);
-                console.log("Visit record nahi ho saka.");
-
-            });
+                });
+        } catch (e) {
+            console.log(e);
+            console.log("Visit record nahi ho saka.");
+        }
 
         function getLocation() {
 

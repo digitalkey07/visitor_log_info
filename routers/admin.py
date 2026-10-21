@@ -15,15 +15,15 @@ def admin():
         token = data.get("token")
         if not token:
             return jsonify({"error": "Invalid request"}), 405
-        user_id = validate_token(token)
-        if not user_id:
+        tokenData = validate_token(token)
+        if not tokenData:
             return jsonify({"error": "Invalid or expired token"}), 403
         else:
             
             with get_db() as conn:
                 user = conn.execute("""
                                     SELECT id,username,user_type FROM users WHERE id = ? AND user_type = 'admin'
-                                    """,(user_id,)).fetchone()
+                                    """,(tokenData["user_id"],)).fetchone()
                 if not user:
                     return jsonify({"error": "Unauthorized access"}), 403
                 logs = conn.execute("""

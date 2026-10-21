@@ -56,14 +56,20 @@ def create_table():
 #======================================
 def migrate_database():
     with get_db() as conn:
-        existing = {
+        existing_visitor_logs = {
             row["name"]
             for row in conn.execute(
                 "PRAGMA table_info(visitor_logs)"
             ).fetchall()
         }
+        existing_users = {
+            row["name"]
+            for row in conn.execute(
+                "PRAGMA table_info(users)"
+            ).fetchall()
+        }
 
-        new_columns = {
+        visitor_new_columns = {
             "visitor_token": "TEXT",
             "device_type": "TEXT",
             "browser": "TEXT",
@@ -72,10 +78,19 @@ def migrate_database():
             "longitude": "REAL",
             "accuracy": "REAL"
         }
+        users_new_columns = {
+            "shared_id": "TEXT UNIQUE"
+        }
 
-        for column, data_type in new_columns.items():
-            if column not in existing:
+        for column, data_type in visitor_new_columns.items():
+            if column not in existing_visitor_logs:
                 conn.execute(
                     f"ALTER TABLE visitor_logs "
+                    f"ADD COLUMN {column} {data_type}"
+                )
+        for column ,data_type in users_new_columns.items():
+            if column not in existing_users:
+                conn.execute(
+                    f"ALTER TABLE users "
                     f"ADD COLUMN {column} {data_type}"
                 )
