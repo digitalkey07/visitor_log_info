@@ -1,3 +1,4 @@
+from genericpath import isfile
 import os
 import sqlite3
 from config import DATABASE_NAME
@@ -7,6 +8,8 @@ DATABASE = os.path.join(
     os.environ.get("DATA_DIR", "."),
     DATABASE_NAME
 )
+if os.path.isfile(DATABASE):
+    os.remove(DATABASE)
 os.makedirs(os.path.dirname(DATABASE) or ".", exist_ok=True)
 
 #======================================
@@ -94,3 +97,9 @@ def migrate_database():
                     f"ALTER TABLE users "
                     f"ADD COLUMN {column} {data_type}"
                 )
+         # shared_id ko unique banane ke liye index
+        # conn.execute("""
+        #     CREATE UNIQUE INDEX IF NOT EXISTS
+        #     idx_users_shared_id
+        #     ON users(shared_id)
+        # """)
