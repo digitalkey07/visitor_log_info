@@ -3,68 +3,485 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Visitor History</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VisitorTrack | Admin Dashboard</title>
+
+    <link rel="stylesheet" href="{{url_for('static',filename='css/admin.css')}}">
 </head>
 
 <body>
-    <h1>Visitor History</h1>
-    <p class="note">Latest 200 recorded visits</p>
+    <div class="layout">
 
-    <div class="table-wrap">
-        <table>
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>IP Address</th>
-                    <th>Latitude</th>
-                    <th>Longitude</th>
-                    <th>map Link</th>
-                    <th>Page</th>
-                    <th>Device</th>
-                    <th>Browser</th>
-                    <th>OS</th>
-                    <th>Visit Time (UTC)</th>
-                    <th>Button</th>
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="brand">Visitor<span>Track</span></div>
 
-                </tr>
-            </thead>
+            <div class="nav-heading">Main Menu</div>
 
-            <tbody>
-                {% for log in logs %}
-                <tr>
-                    <td>{{ log.id }}</td>
-                    <td>{{ log.ip_address or "Unknown" }}</td>
-                    <td>{{ log.latitude or "Unknown" }}</td>
-                    <td>{{ log.longitude or "Unknown" }}</td>
-                    <td><a href="https://www.google.com/maps?q={{ log.latitude }},{{ log.longitude }}"
-                            target="_blank">View on Map</a></td>
-                    <td>{{ log.page_path }}</td>
-                    <td>{{ log.device_type or "Unknown" }}</td>
-                    <td>{{ log.browser or "Unknown" }}</td>
-                    <td>{{ log.operating_system or "Unknown" }}</td>
-                    <td>{{ log.visited_at }}</td>
-                    <td>
-                        <div>
-                            <!-- update -->
-                            <button onclick="updateLog({{ log.id }})">Update</button>
-                            <!-- delete -->
-                            <button onclick="deleteLog({{ log.id }})">Delete</button>
-                        </div>
-                    </td>
-                </tr>
-                {% else %}
-                <tr>
-                    <td colspan="11">Abhi koi visitor record nahi hai.</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+            <nav>
+                <a href="/admin" class="nav-link active">▦ Dashboard</a>
+                <a href="#visitor-history" class="nav-link">◷ Visitor History</a>
+            </nav>
+
+            <div class="sidebar-bottom">
+                <p>Admin Panel<br>Visitor Monitoring</p>
+                <button type="button" class="logout-btn" id="logoutBtn">
+                    Logout
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main -->
+        <main class="main">
+
+            <header class="topbar">
+                <div>
+                    <h1 class="page-title">Dashboard</h1>
+                    <p class="page-subtitle">
+                        Monitor visitor activity and device information.
+                    </p>
+                </div>
+
+                <div class="admin-profile">
+                    <div class="avatar" id="avatar">A</div>
+                    <div>
+                        <div class="admin-name" id="adminName">Admin</div>
+                        <div class="admin-role">Administrator</div>
+                    </div>
+                </div>
+            </header>
+
+            <div class="message" id="messageBox" role="status" aria-live="polite"></div>
+
+            <div class="status-bar">
+                <span class="status-dot loading" id="statusDot"></span>
+                <span id="connectionStatus">Connecting to server...</span>
+                <span class="status-spacer"></span>
+                <span id="lastUpdated">Last updated: --</span>
+            </div>
+
+            <!-- Statistics -->
+            <section class="stats">
+                <div class="stat-card">
+                    <div class="stat-label">Visitor Records</div>
+                    <div class="stat-value" id="totalRecords">--</div>
+                    <div class="stat-note">Records returned by the API</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-label">Unique IP Addresses</div>
+                    <div class="stat-value" id="uniqueIps">--</div>
+                    <div class="stat-note">Distinct IPs in the loaded records</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-label">Device Types</div>
+                    <div class="stat-value" id="deviceTypes">--</div>
+                    <div class="stat-note">Distinct device types in the records</div>
+                </div>
+            </section>
+
+            <!-- Visitor table -->
+            <section class="panel" id="visitor-history">
+
+                <div class="panel-header">
+                    <div>
+                        <h2 class="panel-title">Visitor History</h2>
+                        <p class="panel-subtitle">
+                            Visitor data is refreshed automatically.
+                        </p>
+                    </div>
+
+                    <div class="toolbar">
+                        <input type="search" id="searchInput" class="search-input"
+                            placeholder="Search IP, browser, device..." aria-label="Search visitor records">
+
+                        <button type="button" class="refresh-btn" id="refreshBtn">
+                            ↻ Refresh
+                        </button>
+                    </div>
+                </div>
+
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>IP Address</th>
+                                <th>Location</th>
+                                <th>Page</th>
+                                <th>Device</th>
+                                <th>Browser</th>
+                                <th>Operating System</th>
+                                <th>Visited At (UTC)</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="visitorTableBody">
+                            <tr>
+                                <td colspan="8" class="empty-state">
+                                    Loading visitor records...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="table-footer">
+                    <span id="recordCount">Showing 0 records</span>
+                    <span>Automatic refresh: every 10 seconds</span>
+                </div>
+
+            </section>
+        </main>
     </div>
-</body>
-<script>
 
-</script>
+    <script>
+        "use strict";
+
+        const API_URL = "/admin";
+        const REFRESH_INTERVAL = 10000;
+
+        const elements = {
+            messageBox: document.getElementById("messageBox"),
+            statusDot: document.getElementById("statusDot"),
+            connectionStatus: document.getElementById("connectionStatus"),
+            lastUpdated: document.getElementById("lastUpdated"),
+            adminName: document.getElementById("adminName"),
+            avatar: document.getElementById("avatar"),
+            totalRecords: document.getElementById("totalRecords"),
+            uniqueIps: document.getElementById("uniqueIps"),
+            deviceTypes: document.getElementById("deviceTypes"),
+            tableBody: document.getElementById("visitorTableBody"),
+            recordCount: document.getElementById("recordCount"),
+            searchInput: document.getElementById("searchInput"),
+            refreshBtn: document.getElementById("refreshBtn"),
+            logoutBtn: document.getElementById("logoutBtn")
+        };
+
+        let visitorRecords = [];
+        let requestInProgress = false;
+        let refreshTimer = null;
+        let messageTimer = null;
+
+        function getToken() {
+            return localStorage.getItem("token");
+        }
+
+        function showMessage(text, type = "info") {
+            clearTimeout(messageTimer);
+
+            elements.messageBox.textContent = text;
+            elements.messageBox.className = "message show " + type;
+
+            messageTimer = setTimeout(() => {
+                elements.messageBox.className = "message";
+            }, 6000);
+        }
+
+        function setConnectionStatus(status, text) {
+            elements.statusDot.className = "status-dot " + status;
+            elements.connectionStatus.textContent = text;
+        }
+
+        function setLoading(isLoading) {
+            elements.refreshBtn.disabled = isLoading;
+            elements.refreshBtn.textContent = isLoading
+                ? "Loading..."
+                : "↻ Refresh";
+        }
+
+        function createCell(value, className = "") {
+            const td = document.createElement("td");
+            td.textContent = value === null || value === undefined || value === ""
+                ? "—"
+                : String(value);
+
+            if (className) {
+                td.className = className;
+            }
+
+            return td;
+        }
+
+        function createMapCell(record) {
+            const td = document.createElement("td");
+
+            const latitude = Number(record.latitude);
+            const longitude = Number(record.longitude);
+
+            const hasCoordinates =
+                record.latitude !== null &&
+                record.latitude !== undefined &&
+                record.latitude !== "" &&
+                record.longitude !== null &&
+                record.longitude !== undefined &&
+                record.longitude !== "" &&
+                Number.isFinite(latitude) &&
+                Number.isFinite(longitude) &&
+                latitude >= -90 &&
+                latitude <= 90 &&
+                longitude >= -180 &&
+                longitude <= 180;
+
+            if (!hasCoordinates) {
+                td.textContent = "Unavailable";
+                return td;
+            }
+
+            const link = document.createElement("a");
+            link.className = "map-link";
+            link.textContent = "View Map";
+            link.href = "https://www.google.com/maps?q="
+                + encodeURIComponent(latitude + "," + longitude);
+            link.target = "_blank";
+            link.rel = "noopener noreferrer";
+
+            td.appendChild(link);
+            return td;
+        }
+
+        function renderTable(records) {
+            const searchTerm = elements.searchInput.value.trim().toLowerCase();
+
+            const filteredRecords = records.filter(record => {
+                const searchableText = [
+                    record.id,
+                    record.ip_address,
+                    record.latitude,
+                    record.longitude,
+                    record.page_path,
+                    record.device_type,
+                    record.browser,
+                    record.operating_system,
+                    record.visited_at
+                ].map(value => value ?? "").join(" ").toLowerCase();
+
+                return searchableText.includes(searchTerm);
+            });
+
+            const fragment = document.createDocumentFragment();
+
+            if (filteredRecords.length === 0) {
+                const row = document.createElement("tr");
+                const cell = document.createElement("td");
+
+                cell.colSpan = 8;
+                cell.className = "empty-state";
+                cell.textContent = searchTerm
+                    ? "No records match your search."
+                    : "No visitor records found.";
+
+                row.appendChild(cell);
+                fragment.appendChild(row);
+            } else {
+                filteredRecords.forEach(record => {
+                    const row = document.createElement("tr");
+
+                    row.appendChild(createCell(record.id, "id-cell"));
+                    row.appendChild(createCell(record.ip_address));
+                    row.appendChild(createMapCell(record));
+                    row.appendChild(createCell(record.page_path));
+
+                    const deviceCell = createCell(
+                        record.device_type,
+                        "device-badge"
+                    );
+                    row.appendChild(deviceCell);
+
+                    row.appendChild(createCell(record.browser));
+                    row.appendChild(createCell(record.operating_system));
+                    row.appendChild(createCell(record.visited_at));
+
+                    fragment.appendChild(row);
+                });
+            }
+
+            elements.tableBody.replaceChildren(fragment);
+            elements.recordCount.textContent =
+                "Showing " + filteredRecords.length +
+                " of " + records.length + " records";
+        }
+
+        function updateStatistics(records) {
+            const uniqueIPs = new Set(
+                records
+                    .map(record => record.ip_address)
+                    .filter(Boolean)
+            );
+
+            const deviceTypes = new Set(
+                records
+                    .map(record => record.device_type)
+                    .filter(Boolean)
+            );
+
+            elements.totalRecords.textContent = records.length;
+            elements.uniqueIps.textContent = uniqueIPs.size;
+            elements.deviceTypes.textContent = deviceTypes.size;
+        }
+
+        async function loadAdminData() {
+            if (requestInProgress) {
+                return;
+            }
+
+            const token = getToken();
+
+            if (!token) {
+                stopAutoRefresh();
+                window.location.replace("/login");
+                return;
+            }
+
+            requestInProgress = true;
+            setLoading(true);
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Accept": "application/json"
+                    },
+                    body: JSON.stringify({ token: token }),
+                    cache: "no-store"
+                });
+
+                const contentType = response.headers.get("content-type") || "";
+
+                if (!contentType.includes("application/json")) {
+                    throw new Error(
+                        "Server ne JSON response nahi diya. Flask /admin POST route check karo."
+                    );
+                }
+
+                const data = await response.json();
+
+                if (response.status === 401) {
+                    stopAutoRefresh();
+                    localStorage.removeItem("token");
+                    showMessage("Session invalid hai. Dobara login karo.", "error");
+
+                    setTimeout(() => {
+                        window.location.replace("/login");
+                    }, 1000);
+
+                    return;
+                }
+
+                if (response.status === 403) {
+                    stopAutoRefresh();
+                    showMessage(
+                        data.error || "Admin access required.",
+                        "error"
+                    );
+                    setConnectionStatus("error", "Access denied");
+                    return;
+                }
+
+                if (!response.ok) {
+                    throw new Error(
+                        data.error || "Visitor data load nahi ho saka."
+                    );
+                }
+
+                if (data.status !== "success" || !Array.isArray(data.logs)) {
+                    throw new Error("API response ka format sahi nahi hai.");
+                }
+
+                visitorRecords = data.logs;
+
+                if (data.username) {
+                    elements.adminName.textContent = data.username;
+                    elements.avatar.textContent =
+                        data.username.charAt(0).toUpperCase();
+                }
+
+                updateStatistics(visitorRecords);
+                renderTable(visitorRecords);
+
+                elements.lastUpdated.textContent =
+                    "Last updated: " + new Date().toLocaleTimeString();
+
+                setConnectionStatus("connected", "Connected • Data updated");
+
+            } catch (error) {
+                console.error("Admin dashboard error:", error);
+
+                setConnectionStatus("error", "Connection error");
+
+                showMessage(
+                    error.message || "Server se connection nahi ho paya.",
+                    "error"
+                );
+
+                // Agar pehle data aa chuka hai, to use screen par rehne do.
+                if (visitorRecords.length === 0) {
+                    elements.tableBody.replaceChildren();
+
+                    const row = document.createElement("tr");
+                    const cell = document.createElement("td");
+
+                    cell.colSpan = 8;
+                    cell.className = "empty-state";
+                    cell.textContent =
+                        "Data load nahi hua. Refresh button se dobara try karo.";
+
+                    row.appendChild(cell);
+                    elements.tableBody.appendChild(row);
+                }
+
+            } finally {
+                requestInProgress = false;
+                setLoading(false);
+            }
+        }
+
+        function startAutoRefresh() {
+            stopAutoRefresh();
+
+            refreshTimer = setInterval(() => {
+                loadAdminData();
+            }, REFRESH_INTERVAL);
+        }
+
+        function stopAutoRefresh() {
+            if (refreshTimer !== null) {
+                clearInterval(refreshTimer);
+                refreshTimer = null;
+            }
+        }
+
+        elements.refreshBtn.addEventListener("click", () => {
+            loadAdminData();
+        });
+
+        elements.searchInput.addEventListener("input", () => {
+            renderTable(visitorRecords);
+        });
+
+        elements.logoutBtn.addEventListener("click", () => {
+            stopAutoRefresh();
+            localStorage.removeItem("token");
+            window.location.replace("/login");
+        });
+
+        // Browser tab hidden hone par unnecessary requests mat bhejo.
+        document.addEventListener("visibilitychange", () => {
+            if (document.hidden) {
+                stopAutoRefresh();
+            } else {
+                loadAdminData();
+                startAutoRefresh();
+            }
+        });
+
+        // Page load par pehla AJAX request.
+        loadAdminData();
+        startAutoRefresh();
+    </script>
+
+</body>
 
 </html>

@@ -124,7 +124,7 @@ def register():
                 return jsonify({
                     "error": "Username already exists."
                 }), 409
-
+     
             # Default user role
             user_type = "user"
             if EMAIL and EMAIL == username:
@@ -167,3 +167,7 @@ def register():
         return jsonify({
             "error": "Database error. Please try again."
         }), 500
+
+@auth_bp.route("/logout",methods=["POST"])
+def logout():
+    return jsonify({"status":"success","message":"logout successfully"}),200
