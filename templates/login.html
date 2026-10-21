@@ -35,6 +35,10 @@
     document.querySelector("form").addEventListener('submit', async function (e) {
         const username = document.getElementById('username').value.trim();
         const password = document.getElementById('password').value.trim();
+        console.log(username);
+        console.log(password);
+
+
         if (username.length < 3 || username.length > 50) {
             alert("Username must be between 3 and 50 characters.");
             e.preventDefault();
@@ -51,10 +55,15 @@
                 body: JSON.stringify({ "username": username, "password": password })
             });
             const data = await res.json();
+            console.log(data);
+
             if (!res.ok) {
+                console.log(data.error);
+
                 alert(data.error);
                 e.preventDefault();
             } else {
+                console.log(data.token);
                 const token = data.token;
                 localStorage.setItem("token", token);
                 window.location.href = "/";

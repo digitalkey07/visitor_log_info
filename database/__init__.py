@@ -8,8 +8,8 @@ DATABASE = os.path.join(
     os.environ.get("DATA_DIR", "."),
     DATABASE_NAME
 )
-# if os.path.isfile(DATABASE):
-#     os.remove(DATABASE)
+if os.path.isfile(DATABASE):
+    os.remove(DATABASE)
 os.makedirs(os.path.dirname(DATABASE) or ".", exist_ok=True)
 
 #======================================
@@ -53,7 +53,7 @@ def create_table():
                 user_type TEXT NOT NULL DEFAULT 'user',
                 "shared_id" TEXT NOT NULL UNIQUE
             )
-        """)
+        """)    
 
 #======================================
 #DATABASE MIGRATION FUNCTION
