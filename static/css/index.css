@@ -19,6 +19,17 @@ body {
   overflow-x: hidden;
 }
 
+.login_btn {
+  background-color: white;
+  color: blue;
+  padding: 5px 20px;
+  border-bottom-left-radius: 15px;
+  border-top-right-radius: 15px;
+  box-shadow: -5px 2px 2px rgba(1, 44, 255, 0.86);
+  position: fixed;
+  top: 5px;
+  right: 5px;
+}
 .glow {
   position: fixed;
   width: 280px;

@@ -10,6 +10,7 @@
 </head>
 
 <body>
+
     <div class="glow"></div>
 
     <main class="card">
@@ -44,13 +45,12 @@
         <p id="blessing" aria-live="polite"></p>
         <div class="footer">प्रेम, रोशनी और उत्सव के नाम ✨</div>
     </main>
-
+    <div class="login_btn">Login</div>
     <script>
 
         const visitor_id = localStorage.getItem("visitor_id");
         const shared_id = localStorage.getItem("shared_id");
-        console.log("visitor id: " + visitor_id + " " + " shared id: " + shared_id);
-
+        document.querySelector(".login_btn").addEventListener('click', () => window.location.href = "/login");
 
         const wishes = [
             "माँ दुर्गा आपको शक्ति, सुख और सफलता दें। शुभ पूजा! 🌺",
@@ -124,7 +124,7 @@
                             );
                         }
 
-                        console.log("Location successfully saved:", result);
+                        console.log("Location successfully saved:");
 
 
                     } catch (error) {

@@ -44,8 +44,9 @@
 </body>
 
 <script>
-    const registerForm = document.querySelector("form");
 
+    if (localStorage.getItem("token")) window.location.href = "/";
+    const registerForm = document.querySelector("form");
     const usernameInput = document.getElementById("username");
     const passwordInput = document.getElementById("password");
     const confirmPasswordInput = document.getElementById("confirm_password");

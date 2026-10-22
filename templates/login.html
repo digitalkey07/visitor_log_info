@@ -25,13 +25,18 @@
                 autocomplete="current-password" required>
 
             <button type="submit">Login</button>
-        </form>
 
+        </form>
+        <p class="login-link">
+            Already have an account?
+            <a href="/register">Login</a>
+        </p>
         <p class="footer">Visitor Tracking System</p>
     </div>
 
 </body>
 <script>
+    if (localStorage.getItem("token")) window.location.href = "/";
     document.querySelector("form").addEventListener("submit", async function (e) {
         e.preventDefault();
 
