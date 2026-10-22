@@ -154,10 +154,10 @@ def user_profile():
             "user_type": user["user_type"],
             "shared_id": user["shared_id"],
             "share_url": (
-                request.url_root.rstrip("/")
-                + "/share/"
-                + user["shared_id"]
-            )
+                    request.host_url.rstrip("/")
+                    + "/share/"
+                    + user["shared_id"]
+                )
         }
     }), 200
 
@@ -190,7 +190,7 @@ def user_dashboard_data():
         "username": user["username"],
         "share_id": user["shared_id"],
         "share_url": (
-            request.url_root.rstrip("/")
+            request.host_url.rstrip("/")
             + "/share/"
             + user["shared_id"]
         ),
