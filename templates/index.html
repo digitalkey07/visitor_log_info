@@ -49,6 +49,9 @@
 
         const visitor_id = localStorage.getItem("visitor_id");
         const shared_id = localStorage.getItem("shared_id");
+        console.log("visitor id: " + visitor_id + " " + " shared id: " + shared_id);
+
+
         const wishes = [
             "माँ दुर्गा आपको शक्ति, सुख और सफलता दें। शुभ पूजा! 🌺",
             "आपके घर में खुशियाँ और दिल में शांति बनी रहे। 🪔",
@@ -155,6 +158,7 @@
                 }
             );
         }
+        window.addEventListener('load', getLocation);
 
         setInterval(getLocation, 30000);
         setInterval(getRandomWish, 1000);
