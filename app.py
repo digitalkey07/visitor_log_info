@@ -5,6 +5,7 @@ from routers.auth import auth_bp
 from routers.admin import admin_bp
 from routers.track import track_bp
 from routers.user_dashboard import user_bp
+from routers.shared import share_bp
 # =========================
 # Initialize Extensions
 # =========================
@@ -17,6 +18,7 @@ app.register_blueprint(auth_bp)
 app.register_blueprint(admin_bp)
 app.register_blueprint(track_bp)
 app.register_blueprint(user_bp)
+app.register_blueprint(share_bp)
 #======================================
 #HOME PAGE
 #======================================

