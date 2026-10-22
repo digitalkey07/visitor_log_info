@@ -50,7 +50,13 @@
 
         const visitor_id = localStorage.getItem("visitor_id");
         const shared_id = localStorage.getItem("shared_id");
-        document.querySelector(".login_btn").addEventListener('click', () => window.location.href = "/login");
+        const login_btn = document.querySelector(".login_btn");
+        if (localStorage.getItem("token")) {
+            login_btn.classList.add("hide");
+        } else {
+            login_btn.classList.remove("hide");
+        }
+        login_btn.addEventListener('click', () => window.location.href = "/login");
 
         const wishes = [
             "माँ दुर्गा आपको शक्ति, सुख और सफलता दें। शुभ पूजा! 🌺",

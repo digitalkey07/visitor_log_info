@@ -32,6 +32,9 @@ body {
   cursor: pointer;
   user-select: none;
 }
+.login_btn.hide {
+  display: none;
+}
 .glow {
   position: fixed;
   width: 280px;
