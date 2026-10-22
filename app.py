@@ -4,6 +4,7 @@ from database import create_table,migrate_database
 from routers.auth import auth_bp
 from routers.admin import admin_bp
 from routers.track import track_bp
+from routers.user_dashboard import user_bp
 # =========================
 # Initialize Extensions
 # =========================
@@ -15,6 +16,7 @@ app.config["SECRET_KEY"] = SECRET_KEY
 app.register_blueprint(auth_bp)
 app.register_blueprint(admin_bp)
 app.register_blueprint(track_bp)
+app.register_blueprint(user_bp)
 #======================================
 #HOME PAGE
 #======================================

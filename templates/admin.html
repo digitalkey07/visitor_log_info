@@ -5,483 +5,645 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VisitorTrack | Admin Dashboard</title>
-
     <link rel="stylesheet" href="{{url_for('static',filename='css/admin.css')}}">
 </head>
 
 <body>
     <div class="layout">
-
-        <!-- Sidebar -->
         <aside class="sidebar">
             <div class="brand">Visitor<span>Track</span></div>
 
-            <div class="nav-heading">Main Menu</div>
-
+            <div class="nav-heading">MAIN MENU</div>
             <nav>
-                <a href="/admin" class="nav-link active">▦ Dashboard</a>
-                <a href="#visitor-history" class="nav-link">◷ Visitor History</a>
+                <a href="#dashboard" class="nav-link active" data-view="dashboard">
+                    <span class="nav-icon">▦</span> Dashboard
+                </a>
+                <a href="#users" class="nav-link" data-view="users">
+                    <span class="nav-icon">♟</span> Users
+                </a>
+                <a href="#visitors" class="nav-link" data-view="visitors">
+                    <span class="nav-icon">◷</span> Visitors
+                </a>
             </nav>
 
             <div class="sidebar-bottom">
-                <p>Admin Panel<br>Visitor Monitoring</p>
-                <button type="button" class="logout-btn" id="logoutBtn">
-                    Logout
-                </button>
+                <strong>Admin Panel</strong><br>
+                Visitor Monitoring
+                <button class="logout-btn" id="logoutBtn">⇥ &nbsp; Logout</button>
             </div>
         </aside>
 
-        <!-- Main -->
         <main class="main">
-
             <header class="topbar">
                 <div>
-                    <h1 class="page-title">Dashboard</h1>
-                    <p class="page-subtitle">
-                        Monitor visitor activity and device information.
+                    <h1 class="page-title" id="pageTitle">Dashboard</h1>
+                    <p class="page-subtitle" id="pageSubtitle">
+                        Overview of users, referrals and visitor activity.
                     </p>
                 </div>
 
                 <div class="admin-profile">
                     <div class="avatar" id="avatar">A</div>
-                    <div>
+                    <div class="admin-details">
                         <div class="admin-name" id="adminName">Admin</div>
                         <div class="admin-role">Administrator</div>
                     </div>
                 </div>
             </header>
 
-            <div class="message" id="messageBox" role="status" aria-live="polite"></div>
+            <div class="content">
+                <div class="status-bar">
+                    <div><span class="status-dot" id="statusDot"></span>
+                        <span id="connectionStatus">Connecting to server...</span>
+                    </div>
+                    <div>Last updated: <span id="lastUpdated">—</span></div>
+                </div>
 
-            <div class="status-bar">
-                <span class="status-dot loading" id="statusDot"></span>
-                <span id="connectionStatus">Connecting to server...</span>
-                <span class="status-spacer"></span>
-                <span id="lastUpdated">Last updated: --</span>
+                <div class="message" id="messageBox" role="alert"></div>
+
+                <!-- DASHBOARD VIEW -->
+                <section id="dashboardView">
+                    <div class="stats">
+                        <div class="stat-card">
+                            <div class="stat-top">
+                                <div class="stat-icon icon-blue">♟</div>
+                                <div>
+                                    <div class="stat-label">Total Users</div>
+                                    <div class="stat-value" id="totalUsers">—</div>
+                                </div>
+                            </div>
+                            <div class="stat-note">Registered accounts</div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-top">
+                                <div class="stat-icon icon-green">↗</div>
+                                <div>
+                                    <div class="stat-label">Total Share Links</div>
+                                    <div class="stat-value" id="totalLinks">—</div>
+                                </div>
+                            </div>
+                            <div class="stat-note">Users with a share ID</div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-top">
+                                <div class="stat-icon icon-purple">♧</div>
+                                <div>
+                                    <div class="stat-label">Total Visitors</div>
+                                    <div class="stat-value" id="totalVisitors">—</div>
+                                </div>
+                            </div>
+                            <div class="stat-note">Tracked visitor records</div>
+                        </div>
+                    </div>
+
+                    <section class="panel">
+                        <div class="panel-header">
+                            <div>
+                                <h2 class="panel-title">User Performance</h2>
+                                <p class="panel-subtitle">Visitors received through each user's share link.</p>
+                            </div>
+                            <div class="toolbar">
+                                <input class="search-input" id="userSearch" type="search" placeholder="Search users...">
+                                <button class="btn" id="refreshDashboard">↻ Refresh</button>
+                            </div>
+                        </div>
+
+                        <div class="table-wrapper">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Username</th>
+                                        <th>Shared ID</th>
+                                        <th>Share Link</th>
+                                        <th>Total Visitors</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="dashboardUsersBody">
+                                    <tr>
+                                        <td colspan="6" class="empty-state">Loading users...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="info-banner">ⓘ Click “View” to see visitors attributed to that user.</div>
+                        <div class="table-footer" id="dashboardUsersCount">Showing 0 users</div>
+                    </section>
+
+                    <section class="panel">
+                        <div class="panel-header">
+                            <div>
+                                <h2 class="panel-title">Recent Visitor Activity</h2>
+                                <p class="panel-subtitle">Latest tracked visitor records across all users.</p>
+                            </div>
+                            <button class="btn btn-primary" id="viewAllVisitors">View All Visitors →</button>
+                        </div>
+                        <div class="table-wrapper">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>IP Address</th>
+                                        <th>Page</th>
+                                        <th>Device</th>
+                                        <th>Browser</th>
+                                        <th>OS</th>
+                                        <th>Referrer (User)</th>
+                                        <th>Visited At</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="recentVisitorsBody">
+                                    <tr>
+                                        <td colspan="8" class="empty-state">Loading visitors...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="table-footer" id="recentCount">Showing 0 records</div>
+                    </section>
+                </section>
+
+                <!-- USERS VIEW -->
+                <section id="usersView" class="hidden">
+                    <section class="panel">
+                        <div class="panel-header">
+                            <div>
+                                <h2 class="panel-title">Registered Users</h2>
+                                <p class="panel-subtitle">Select a user to inspect their referral visitors.</p>
+                            </div>
+                            <div class="toolbar">
+                                <input class="search-input" id="usersSearch" type="search"
+                                    placeholder="Search username or shared ID...">
+                                <button class="btn" id="refreshUsers">↻ Refresh</button>
+                            </div>
+                        </div>
+                        <div class="table-wrapper">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Username</th>
+                                        <th>Role</th>
+                                        <th>Shared ID</th>
+                                        <th>Share Link</th>
+                                        <th>Visitors</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="usersTableBody">
+                                    <tr>
+                                        <td colspan="7" class="empty-state">Loading users...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="table-footer" id="usersCount">Showing 0 users</div>
+                    </section>
+
+                    <section class="panel hidden" id="userVisitorsPanel">
+                        <div class="panel-header">
+                            <div>
+                                <h2 class="panel-title" id="selectedUserTitle">User Visitors</h2>
+                                <p class="panel-subtitle">Visitors linked to the selected shared ID.</p>
+                            </div>
+                            <button class="btn" id="backToUsers">← Back to users</button>
+                        </div>
+                        <div class="table-wrapper">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>IP Address</th>
+                                        <th>Page</th>
+                                        <th>Device</th>
+                                        <th>Browser</th>
+                                        <th>OS</th>
+                                        <th>Visited At</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="userVisitorsBody">
+                                    <tr>
+                                        <td colspan="7" class="empty-state">Select a user.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="table-footer" id="userVisitorsCount">Showing 0 visitors</div>
+                    </section>
+                </section>
+
+                <!-- ALL VISITORS VIEW -->
+                <section id="visitorsView" class="hidden">
+                    <section class="panel">
+                        <div class="panel-header">
+                            <div>
+                                <h2 class="panel-title">All Visitors</h2>
+                                <p class="panel-subtitle">Search and monitor tracked visitor activity.</p>
+                            </div>
+                            <div class="toolbar">
+                                <input class="search-input" id="visitorSearch" type="search"
+                                    placeholder="Search IP, page, device, referrer...">
+                                <button class="btn" id="refreshVisitors">↻ Refresh</button>
+                            </div>
+                        </div>
+                        <div class="table-wrapper">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>IP Address</th>
+                                        <th>Page</th>
+                                        <th>Device</th>
+                                        <th>Browser</th>
+                                        <th>OS</th>
+                                        <th>Referrer (User)</th>
+                                        <th>Visited At</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="visitorsTableBody">
+                                    <tr>
+                                        <td colspan="8" class="empty-state">Loading visitors...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="table-footer" id="visitorsCount">Showing 0 records</div>
+                    </section>
+                </section>
             </div>
-
-            <!-- Statistics -->
-            <section class="stats">
-                <div class="stat-card">
-                    <div class="stat-label">Visitor Records</div>
-                    <div class="stat-value" id="totalRecords">--</div>
-                    <div class="stat-note">Records returned by the API</div>
-                </div>
-
-                <div class="stat-card">
-                    <div class="stat-label">Unique IP Addresses</div>
-                    <div class="stat-value" id="uniqueIps">--</div>
-                    <div class="stat-note">Distinct IPs in the loaded records</div>
-                </div>
-
-                <div class="stat-card">
-                    <div class="stat-label">Device Types</div>
-                    <div class="stat-value" id="deviceTypes">--</div>
-                    <div class="stat-note">Distinct device types in the records</div>
-                </div>
-            </section>
-
-            <!-- Visitor table -->
-            <section class="panel" id="visitor-history">
-
-                <div class="panel-header">
-                    <div>
-                        <h2 class="panel-title">Visitor History</h2>
-                        <p class="panel-subtitle">
-                            Visitor data is refreshed automatically.
-                        </p>
-                    </div>
-
-                    <div class="toolbar">
-                        <input type="search" id="searchInput" class="search-input"
-                            placeholder="Search IP, browser, device..." aria-label="Search visitor records">
-
-                        <button type="button" class="refresh-btn" id="refreshBtn">
-                            ↻ Refresh
-                        </button>
-                    </div>
-                </div>
-
-                <div class="table-wrapper">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>IP Address</th>
-                                <th>Location</th>
-                                <th>Page</th>
-                                <th>Device</th>
-                                <th>Browser</th>
-                                <th>Operating System</th>
-                                <th>Visited At (UTC)</th>
-                            </tr>
-                        </thead>
-
-                        <tbody id="visitorTableBody">
-                            <tr>
-                                <td colspan="8" class="empty-state">
-                                    Loading visitor records...
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <div class="table-footer">
-                    <span id="recordCount">Showing 0 records</span>
-                    <span>Automatic refresh: every 10 seconds</span>
-                </div>
-
-            </section>
         </main>
     </div>
 
     <script>
-        "use strict";
+        (() => {
+            "use strict";
 
-        const API_URL = "/admin";
-        const REFRESH_INTERVAL = 20000;
+            // Same-origin Flask API routes.
+            const API = {
+                dashboard: "/admin/dashboard",
+                users: "/admin/users",
+                visitors: "/admin/visitors",
+                userVisitors: id => `/admin/users/${encodeURIComponent(id)}/visitors`
+            };
 
-        const elements = {
-            messageBox: document.getElementById("messageBox"),
-            statusDot: document.getElementById("statusDot"),
-            connectionStatus: document.getElementById("connectionStatus"),
-            lastUpdated: document.getElementById("lastUpdated"),
-            adminName: document.getElementById("adminName"),
-            avatar: document.getElementById("avatar"),
-            totalRecords: document.getElementById("totalRecords"),
-            uniqueIps: document.getElementById("uniqueIps"),
-            deviceTypes: document.getElementById("deviceTypes"),
-            tableBody: document.getElementById("visitorTableBody"),
-            recordCount: document.getElementById("recordCount"),
-            searchInput: document.getElementById("searchInput"),
-            refreshBtn: document.getElementById("refreshBtn"),
-            logoutBtn: document.getElementById("logoutBtn")
-        };
+            const $ = id => document.getElementById(id);
+            const state = {
+                view: "dashboard",
+                users: [],
+                visitors: [],
+                dashboardVisitors: [],
+                selectedUser: null
+            };
 
-        let visitorRecords = [];
-        let requestInProgress = false;
-        let refreshTimer = null;
-        let messageTimer = null;
+            const token = localStorage.getItem("token");
 
-        function getToken() {
-            return localStorage.getItem("token");
-        }
-
-        function showMessage(text, type = "info") {
-            clearTimeout(messageTimer);
-
-            elements.messageBox.textContent = text;
-            elements.messageBox.className = "message show " + type;
-
-            messageTimer = setTimeout(() => {
-                elements.messageBox.className = "message";
-            }, 6000);
-        }
-
-        function setConnectionStatus(status, text) {
-            elements.statusDot.className = "status-dot " + status;
-            elements.connectionStatus.textContent = text;
-        }
-
-        function setLoading(isLoading) {
-            elements.refreshBtn.disabled = isLoading;
-            elements.refreshBtn.textContent = isLoading
-                ? "Loading..."
-                : "↻ Refresh";
-        }
-
-        function createCell(value, className = "") {
-            const td = document.createElement("td");
-            td.textContent = value === null || value === undefined || value === ""
-                ? "—"
-                : String(value);
-
-            if (className) {
-                td.className = className;
+            function showMessage(message) {
+                $("messageBox").textContent = message;
+                $("messageBox").classList.add("show");
             }
 
-            return td;
-        }
-
-        function createMapCell(record) {
-            const td = document.createElement("td");
-
-            const latitude = Number(record.latitude);
-            const longitude = Number(record.longitude);
-
-            const hasCoordinates =
-                record.latitude !== null &&
-                record.latitude !== undefined &&
-                record.latitude !== "" &&
-                record.longitude !== null &&
-                record.longitude !== undefined &&
-                record.longitude !== "" &&
-                Number.isFinite(latitude) &&
-                Number.isFinite(longitude) &&
-                latitude >= -90 &&
-                latitude <= 90 &&
-                longitude >= -180 &&
-                longitude <= 180;
-
-            if (!hasCoordinates) {
-                td.textContent = "Unavailable";
-                return td;
+            function clearMessage() {
+                $("messageBox").textContent = "";
+                $("messageBox").classList.remove("show");
             }
 
-            const link = document.createElement("a");
-            link.className = "map-link";
-            link.textContent = "View Map";
-            link.href = "https://www.google.com/maps?q="
-                + encodeURIComponent(latitude + "," + longitude);
-            link.target = "_blank";
-            link.rel = "noopener noreferrer";
-
-            td.appendChild(link);
-            return td;
-        }
-
-        function renderTable(records) {
-            const searchTerm = elements.searchInput.value.trim().toLowerCase();
-
-            const filteredRecords = records.filter(record => {
-                const searchableText = [
-                    record.id,
-                    record.ip_address,
-                    record.latitude,
-                    record.longitude,
-                    record.page_path,
-                    record.device_type,
-                    record.browser,
-                    record.operating_system,
-                    record.visited_at
-                ].map(value => value ?? "").join(" ").toLowerCase();
-
-                return searchableText.includes(searchTerm);
-            });
-
-            const fragment = document.createDocumentFragment();
-
-            if (filteredRecords.length === 0) {
-                const row = document.createElement("tr");
-                const cell = document.createElement("td");
-
-                cell.colSpan = 8;
-                cell.className = "empty-state";
-                cell.textContent = searchTerm
-                    ? "No records match your search."
-                    : "No visitor records found.";
-
-                row.appendChild(cell);
-                fragment.appendChild(row);
-            } else {
-                filteredRecords.forEach(record => {
-                    const row = document.createElement("tr");
-
-                    row.appendChild(createCell(record.id, "id-cell"));
-                    row.appendChild(createCell(record.ip_address));
-                    row.appendChild(createMapCell(record));
-                    row.appendChild(createCell(record.page_path));
-
-                    const deviceCell = createCell(
-                        record.device_type,
-                        "device-badge"
-                    );
-                    row.appendChild(deviceCell);
-
-                    row.appendChild(createCell(record.browser));
-                    row.appendChild(createCell(record.operating_system));
-                    row.appendChild(createCell(record.visited_at));
-
-                    fragment.appendChild(row);
-                });
+            function setConnection(ok, message) {
+                $("statusDot").classList.toggle("error", !ok);
+                $("connectionStatus").textContent = message;
+                if (ok) $("lastUpdated").textContent = new Date().toLocaleTimeString();
             }
 
-            elements.tableBody.replaceChildren(fragment);
-            elements.recordCount.textContent =
-                "Showing " + filteredRecords.length +
-                " of " + records.length + " records";
-        }
-
-        function updateStatistics(records) {
-            const uniqueIPs = new Set(
-                records
-                    .map(record => record.ip_address)
-                    .filter(Boolean)
-            );
-
-            const deviceTypes = new Set(
-                records
-                    .map(record => record.device_type)
-                    .filter(Boolean)
-            );
-
-            elements.totalRecords.textContent = records.length;
-            elements.uniqueIps.textContent = uniqueIPs.size;
-            elements.deviceTypes.textContent = deviceTypes.size;
-        }
-
-        async function loadAdminData() {
-            if (requestInProgress) {
-                return;
+            function escapeHTML(value) {
+                return String(value ?? "").replace(/[&<>"']/g, char => ({
+                    "&": "&amp;", "<": "&lt;", ">": "&gt;",
+                    '"': "&quot;", "'": "&#39;"
+                })[char]);
             }
 
-            const token = getToken();
+            async function apiRequest(url, options = {}) {
+                if (!token) {
+                    throw new Error("Login token nahi mila. Dobara login karein.");
+                }
 
-            if (!token) {
-                stopAutoRefresh();
-                window.location.replace("/login");
-                return;
-            }
-
-            requestInProgress = true;
-            setLoading(true);
-
-            try {
-                const response = await fetch(API_URL, {
-                    method: "POST",
+                const response = await fetch(url, {
+                    ...options,
                     headers: {
                         "Content-Type": "application/json",
-                        "Accept": "application/json"
+                        ...(options.headers || {})
                     },
-                    body: JSON.stringify({ token: token }),
-                    cache: "no-store"
+                    body: JSON.stringify({
+                        ...(options.body ? JSON.parse(options.body) : {}),
+                        token
+                    })
                 });
 
-                const contentType = await response.headers.get("content-type") || "";
-
-                if (!contentType.includes("application/json")) {
-                    throw new Error(
-                        "Server ne JSON response nahi diya. Flask /admin POST route check karo."
-                    );
+                let data;
+                try {
+                    data = await response.json();
+                } catch {
+                    throw new Error("Server se valid JSON response nahi mila.");
                 }
-
-                const data = await response.json();
 
                 if (response.status === 401) {
-                    stopAutoRefresh();
                     localStorage.removeItem("token");
-                    showMessage("Session invalid hai. Dobara login karo.", "error");
-
-                    setTimeout(() => {
-                        window.location.replace("/login");
-                    }, 1000);
-
-                    return;
+                    throw new Error("Session expire ho gaya. Dobara login karein.");
                 }
 
-                if (response.status === 403) {
-                    stopAutoRefresh();
-                    showMessage(
-                        data.error || "Admin access required.",
-                        "error"
-                    );
-                    setConnectionStatus("error", "Access denied");
-                    return;
+                if (!response.ok || data.status === "error" || data.error) {
+                    throw new Error(data.error || data.message || `Request failed (${response.status})`);
                 }
 
-                if (!response.ok) {
-                    throw new Error(
-                        data.error || "Visitor data load nahi ho saka."
-                    );
-                }
+                return data;
+            }
 
-                if (data.status !== "success" || !Array.isArray(data.logs)) {
-                    throw new Error("API response ka format sahi nahi hai.");
-                }
+            function emptyRow(columns, message) {
+                return `<tr><td colspan="${columns}" class="empty-state">${escapeHTML(message)}</td></tr>`;
+            }
 
-                visitorRecords = data.logs;
+            function shareURL(sharedId) {
+                if (!sharedId) return "";
+                return `${window.location.origin}/share/${encodeURIComponent(sharedId)}`;
+            }
 
-                if (data.username) {
-                    elements.adminName.textContent = data.username;
-                    elements.avatar.textContent =
-                        data.username.charAt(0).toUpperCase();
-                }
+            function shareCell(sharedId) {
+                if (!sharedId) return '<span class="badge gray">No link</span>';
+                const url = shareURL(sharedId);
+                return `<a class="share-link" href="${escapeHTML(url)}" target="_blank" rel="noopener">
+                    ${escapeHTML(url)}
+                </a>
+                <button class="copy-btn" data-copy="${escapeHTML(url)}" title="Copy share link">▢</button>`;
+            }
 
-                updateStatistics(visitorRecords);
-                renderTable(visitorRecords);
+            function formatDate(value) {
+                if (!value) return "—";
+                const date = new Date(value);
+                return Number.isNaN(date.getTime()) ? escapeHTML(value) : escapeHTML(date.toLocaleString());
+            }
 
-                elements.lastUpdated.textContent =
-                    "Last updated: " + new Date().toLocaleTimeString();
+            function visitorRow(visitor, index, includeReferrer = true) {
+                const columns = includeReferrer ? 8 : 7;
+                if (!visitor) return emptyRow(columns, "No visitor records found.");
 
-                setConnectionStatus("connected", "Connected • Data updated");
+                return `<tr>
+            <td>${escapeHTML(visitor.id ?? index + 1)}</td>
+            <td>${escapeHTML(visitor.ip_address || "—")}</td>
+            <td>${escapeHTML(visitor.page_path || "—")}</td>
+            <td><span class="badge">${escapeHTML(visitor.device_type || "Unknown")}</span></td>
+            <td>${escapeHTML(visitor.browser || "Unknown")}</td>
+            <td>${escapeHTML(visitor.operating_system || "Unknown")}</td>
+            ${includeReferrer ? `<td>${escapeHTML(visitor.referrer_username || "Direct / Unknown")}</td>` : ""}
+            <td>${formatDate(visitor.visited_at)}</td>
+        </tr>`;
+            }
 
-            } catch (error) {
-                console.error("Admin dashboard error:", error);
-
-                setConnectionStatus("error", "Connection error");
-
-                showMessage(
-                    error.message || "Server se connection nahi ho paya.",
-                    "error"
+            function renderDashboardUsers(users) {
+                const query = $("userSearch").value.trim().toLowerCase();
+                const filtered = users.filter(user =>
+                    `${user.username || ""} ${user.shared_id || ""}`.toLowerCase().includes(query)
                 );
 
-                // Agar pehle data aa chuka hai, to use screen par rehne do.
-                if (visitorRecords.length === 0) {
-                    elements.tableBody.replaceChildren();
+                $("dashboardUsersBody").innerHTML = filtered.length ? filtered.map((user, index) => `
+            <tr>
+                <td>${index + 1}</td>
+                <td><strong>${escapeHTML(user.username)}</strong></td>
+                <td>${escapeHTML(user.shared_id || "—")}</td>
+                <td>${shareCell(user.shared_id)}</td>
+                <td><strong>${Number(user.visitor_count || 0)}</strong></td>
+                <td><button class="view-btn" data-view-user="${escapeHTML(user.id)}">◉ View</button></td>
+            </tr>
+        `).join("") : emptyRow(6, "No matching users found.");
 
-                    const row = document.createElement("tr");
-                    const cell = document.createElement("td");
+                $("dashboardUsersCount").textContent = `Showing ${filtered.length} of ${users.length} users`;
+            }
 
-                    cell.colSpan = 8;
-                    cell.className = "empty-state";
-                    cell.textContent =
-                        "Data load nahi hua. Refresh button se dobara try karo.";
+            function renderUsers() {
+                const query = $("usersSearch").value.trim().toLowerCase();
+                const users = state.users.filter(user =>
+                    `${user.username || ""} ${user.shared_id || ""} ${user.user_type || ""}`
+                        .toLowerCase().includes(query)
+                );
 
-                    row.appendChild(cell);
-                    elements.tableBody.appendChild(row);
+                $("usersTableBody").innerHTML = users.length ? users.map(user => `
+            <tr>
+                <td>${escapeHTML(user.id)}</td>
+                <td><strong>${escapeHTML(user.username)}</strong></td>
+                <td><span class="badge ${user.user_type === "admin" ? "green" : ""}">
+                    ${escapeHTML(user.user_type || "user")}</span></td>
+                <td>${escapeHTML(user.shared_id || "—")}</td>
+                <td>${shareCell(user.shared_id)}</td>
+                <td><strong>${Number(user.visitor_count || 0)}</strong></td>
+                <td><button class="view-btn" data-view-user="${escapeHTML(user.id)}">◉ View</button></td>
+            </tr>
+        `).join("") : emptyRow(7, "No matching users found.");
+
+                $("usersCount").textContent = `Showing ${users.length} of ${state.users.length} users`;
+            }
+
+            function renderVisitors(tbodyId, countId, visitors, query = "", includeReferrer = true) {
+                const filtered = visitors.filter(visitor =>
+                    `${visitor.ip_address || ""} ${visitor.page_path || ""} ${visitor.device_type || ""} ` +
+                    `${visitor.browser || ""} ${visitor.operating_system || ""} ${visitor.referrer_username || ""}`
+                        .toLowerCase().includes(query.toLowerCase()));
+
+                const columns = includeReferrer ? 8 : 7;
+                $(tbodyId).innerHTML = filtered.length
+                    ? filtered.map((v, i) => visitorRow(v, i, includeReferrer)).join("")
+                    : emptyRow(columns, "No visitor records found.");
+
+                $(countId).textContent = `Showing ${filtered.length} records`;
+            }
+
+            async function loadDashboard() {
+                clearMessage();
+                try {
+                    const data = await apiRequest(API.dashboard, { method: "POST", body: "{}" });
+                    const users = data.users || [];
+                    const visitors = data.recent_visitors || [];
+
+                    state.users = users;
+                    state.dashboardVisitors = visitors;
+
+                    $("totalUsers").textContent = data.total_users ?? users.length;
+                    $("totalLinks").textContent = data.total_share_links ?? users.filter(u => u.shared_id).length;
+                    $("totalVisitors").textContent = data.total_visitors ?? "—";
+
+                    if (data.username) {
+                        $("adminName").textContent = data.username;
+                        $("avatar").textContent = data.username.slice(0, 1).toUpperCase();
+                    }
+
+                    renderDashboardUsers(users);
+                    renderVisitors("recentVisitorsBody", "recentCount", visitors, "", true);
+                    setConnection(true, "Connected to server");
+                } catch (error) {
+                    setConnection(false, "Connection failed");
+                    showMessage(error.message);
+                    $("dashboardUsersBody").innerHTML = emptyRow(6, "Could not load dashboard data.");
+                    $("recentVisitorsBody").innerHTML = emptyRow(8, "Could not load visitor data.");
+                }
+            }
+
+            async function loadUsers() {
+                clearMessage();
+                try {
+                    const data = await apiRequest(API.users, { method: "POST", body: "{}" });
+                    state.users = data.users || [];
+                    renderUsers();
+                    setConnection(true, "Connected to server");
+                } catch (error) {
+                    setConnection(false, "Connection failed");
+                    showMessage(error.message);
+                    $("usersTableBody").innerHTML = emptyRow(7, "Could not load users.");
+                }
+            }
+
+            async function loadVisitors() {
+                clearMessage();
+                try {
+                    const data = await apiRequest(API.visitors, { method: "POST", body: "{}" });
+                    state.visitors = data.logs || data.visitors || [];
+                    if (data.username) $("adminName").textContent = data.username;
+                    renderVisitors("visitorsTableBody", "visitorsCount", state.visitors,
+                        $("visitorSearch").value, true);
+                    setConnection(true, "Connected to server");
+                } catch (error) {
+                    setConnection(false, "Connection failed");
+                    showMessage(error.message);
+                    $("visitorsTableBody").innerHTML = emptyRow(8, "Could not load visitors.");
+                }
+            }
+
+            async function loadUserVisitors(userId) {
+                clearMessage();
+                const user = state.users.find(item => String(item.id) === String(userId));
+                if (!user) return;
+
+                state.selectedUser = user;
+                $("selectedUserTitle").textContent = `Visitors — ${user.username}`;
+                $("userVisitorsPanel").classList.remove("hidden");
+                $("userVisitorsBody").innerHTML = emptyRow(7, "Loading visitor records...");
+
+                try {
+                    const data = await apiRequest(API.userVisitors(userId), {
+                        method: "POST", body: "{}"
+                    });
+                    const visitors = data.visitors || data.logs || [];
+                    renderVisitors("userVisitorsBody", "userVisitorsCount", visitors, "", false);
+                    $("userVisitorsPanel").scrollIntoView({ behavior: "smooth", block: "start" });
+                    setConnection(true, "Connected to server");
+                } catch (error) {
+                    showMessage(error.message);
+                    $("userVisitorsBody").innerHTML = emptyRow(7, "Could not load this user's visitors.");
+                }
+            }
+
+            function setView(view) {
+                state.view = view;
+                const views = {
+                    dashboard: ["dashboardView", "Dashboard", "Overview of users, referrals and visitor activity."],
+                    users: ["usersView", "Users", "Manage registered users and inspect their referral traffic."],
+                    visitors: ["visitorsView", "Visitors", "Review all tracked visitor records."]
+                };
+
+                Object.values(views).forEach(item => $(item[0]).classList.add("hidden"));
+                $(views[view][0]).classList.remove("hidden");
+                $("pageTitle").textContent = views[view][1];
+                $("pageSubtitle").textContent = views[view][2];
+
+                document.querySelectorAll(".nav-link").forEach(link =>
+                    link.classList.toggle("active", link.dataset.view === view)
+                );
+
+                if (view === "dashboard") loadDashboard();
+                if (view === "users") loadUsers();
+                if (view === "visitors") loadVisitors();
+            }
+
+            document.querySelectorAll(".nav-link").forEach(link => {
+                link.addEventListener("click", event => {
+                    event.preventDefault();
+                    history.replaceState(null, "", `#${link.dataset.view}`);
+                    setView(link.dataset.view);
+                });
+            });
+
+            $("refreshDashboard").addEventListener("click", loadDashboard);
+            $("refreshUsers").addEventListener("click", loadUsers);
+            $("refreshVisitors").addEventListener("click", loadVisitors);
+            $("viewAllVisitors").addEventListener("click", () => setView("visitors"));
+
+            $("userSearch").addEventListener("input", () => renderDashboardUsers(state.users));
+            $("usersSearch").addEventListener("input", renderUsers);
+            $("visitorSearch").addEventListener("input", () =>
+                renderVisitors("visitorsTableBody", "visitorsCount", state.visitors,
+                    $("visitorSearch").value, true)
+            );
+
+            $("backToUsers").addEventListener("click", () =>
+                $("userVisitorsPanel").classList.add("hidden")
+            );
+
+            document.addEventListener("click", event => {
+                const viewButton = event.target.closest("[data-view-user]");
+                if (viewButton) {
+                    const id = viewButton.dataset.viewUser;
+                    if (state.view === "dashboard") {
+                        setView("users");
+                        loadUsers().then(() => loadUserVisitors(id));
+                    } else {
+                        loadUserVisitors(id);
+                    }
+                    return;
                 }
 
-            } finally {
-                requestInProgress = false;
-                setLoading(false);
-            }
-        }
+                const copyButton = event.target.closest("[data-copy]");
+                if (copyButton) {
+                    const value = copyButton.dataset.copy;
+                    if (navigator.clipboard && window.isSecureContext) {
+                        navigator.clipboard.writeText(value)
+                            .then(() => { copyButton.textContent = "✓ Copied"; })
+                            .catch(() => showMessage("Link copy nahi hua. Link ko manually copy karein."));
+                    } else {
+                        const field = document.createElement("textarea");
+                        field.value = value;
+                        field.style.position = "fixed";
+                        field.style.opacity = "0";
+                        document.body.appendChild(field);
+                        field.select();
+                        try {
+                            document.execCommand("copy");
+                            copyButton.textContent = "✓ Copied";
+                        } catch {
+                            showMessage("Link copy nahi hua. Link ko manually copy karein.");
+                        }
+                        field.remove();
+                    }
+                    setTimeout(() => { copyButton.textContent = "▢"; }, 1800);
+                }
+            });
 
-        function startAutoRefresh() {
-            stopAutoRefresh();
+            $("logoutBtn").addEventListener("click", () => {
+                localStorage.removeItem("token");
+                window.location.href = "/login";
+            });
 
-            refreshTimer = setInterval(() => {
-                loadAdminData();
-            }, REFRESH_INTERVAL);
-        }
+            // Load the initial view without a full page refresh.
+            const initialView = ["dashboard", "users", "visitors"].includes(location.hash.slice(1))
+                ? location.hash.slice(1) : "dashboard";
+            setView(initialView);
 
-        function stopAutoRefresh() {
-            if (refreshTimer !== null) {
-                clearInterval(refreshTimer);
-                refreshTimer = null;
-            }
-        }
-
-        elements.refreshBtn.addEventListener("click", () => {
-            loadAdminData();
-        });
-
-        elements.searchInput.addEventListener("input", () => {
-            renderTable(visitorRecords);
-        });
-
-        elements.logoutBtn.addEventListener("click", () => {
-            stopAutoRefresh();
-            localStorage.removeItem("token");
-            window.location.replace("/login");
-        });
-
-        // Browser tab hidden hone par unnecessary requests mat bhejo.
-        document.addEventListener("visibilitychange", () => {
-            if (document.hidden) {
-                stopAutoRefresh();
-            } else {
-                loadAdminData();
-                startAutoRefresh();
-            }
-        });
-
-        // Page load par pehla AJAX request.
-        loadAdminData();
-        startAutoRefresh();
+            // Auto-refresh current view every 20 seconds.
+            setInterval(() => {
+                if (document.hidden) return;
+                if (state.view === "dashboard") loadDashboard();
+                if (state.view === "users") loadUsers();
+                if (state.view === "visitors") loadVisitors();
+            }, 20000);
+        })();
     </script>
-
 </body>
 
 </html>

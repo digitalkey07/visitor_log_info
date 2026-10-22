@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>My Dashboard | Visitor Tracking</title>
+
+    <link rel="stylesheet" href="{{url_for('static',filename='css/user_dashboard.css')}}">
+</head>
+
+<body>
+    <div class="layout">
+
+        <aside class="sidebar">
+            <div class="brand">Visitor<span>Track</span></div>
+
+            <div class="nav-label">Workspace</div>
+            <nav class="nav-menu">
+                <button class="nav-btn active" data-view="dashboard">
+                    ▦ &nbsp; Dashboard
+                </button>
+                <button class="nav-btn" data-view="visitors">
+                    ◉ &nbsp; My Visitors
+                </button>
+                <button class="nav-btn" data-view="profile">
+                    ◉ &nbsp; My Profile
+                </button>
+            </nav>
+
+            <div class="sidebar-bottom">
+                <button class="nav-btn" id="logoutBtn">↪ &nbsp; Logout</button>
+            </div>
+        </aside>
+
+        <main class="main">
+            <header class="topbar">
+                <h1 id="pageTitle">Dashboard</h1>
+                <div class="account-name">
+                    Signed in as <strong id="topUsername">User</strong>
+                </div>
+            </header>
+
+            <div class="content">
+
+                <!-- DASHBOARD -->
+                <section class="view active" id="dashboardView">
+                    <div class="welcome">
+                        <h2>Welcome, <span id="welcomeName">User</span>!</h2>
+                        <p class="muted">
+                            Share your unique link and view the visits recorded
+                            through it.
+                        </p>
+                    </div>
+
+                    <div class="stats">
+                        <div class="card">
+                            <div class="stat-title">Total Visitors</div>
+                            <div class="stat-number" id="totalVisitors">—</div>
+                        </div>
+
+                        <div class="card">
+                            <div class="stat-title">Your Account</div>
+                            <div class="stat-number" style="font-size:23px" id="accountType">—</div>
+                        </div>
+
+                        <div class="card">
+                            <div class="stat-title">Your Share ID</div>
+                            <div class="stat-number" style="font-size:20px" id="shareIdStat">—</div>
+                        </div>
+                    </div>
+
+                    <div class="card share-card">
+                        <h2 class="card-heading">Your Share Link</h2>
+                        <p class="muted">
+                            Copy this link and share it with people. Visits
+                            through the link will appear in your visitor list.
+                        </p>
+
+                        <div class="share-row">
+                            <div class="share-url" id="shareUrl">Loading link…</div>
+                            <button class="btn" id="copyLinkBtn">Copy Link</button>
+                        </div>
+                        <p class="status" id="copyStatus" aria-live="polite"></p>
+                    </div>
+
+                    <div class="section-head">
+                        <h2>Recent Visitors</h2>
+                        <button class="btn secondary" id="viewAllBtn">
+                            View All
+                        </button>
+                    </div>
+
+                    <div class="table-card">
+                        <div class="table-wrap">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>IP Address</th>
+                                        <th>Device</th>
+                                        <th>Browser</th>
+                                        <th>Location</th>
+                                        <th>Visit Time</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="recentTable">
+                                    <tr>
+                                        <td colspan="5" class="empty">Loading visitors…</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- VISITORS -->
+                <section class="view" id="visitorsView">
+                    <div class="section-head">
+                        <div>
+                            <h2>My Visitors</h2>
+                            <p class="muted">Visitors attributed to your share link.</p>
+                        </div>
+                        <button class="btn secondary" id="refreshVisitorsBtn">
+                            Refresh
+                        </button>
+                    </div>
+
+                    <div class="table-card">
+                        <div class="table-tools">
+                            <input class="field" id="visitorSearch" placeholder="Search IP, page, browser or OS…"
+                                aria-label="Search visitors">
+                            <span class="status" id="visitorCount" style="align-self:center;white-space:nowrap">
+                                Loading…
+                            </span>
+                        </div>
+
+                        <div class="table-wrap">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>IP Address</th>
+                                        <th>MAC Address</th>
+                                        <th>Latitude</th>
+                                        <th>Longitude</th>
+                                        <th>Map</th>
+                                        <th>Page Path</th>
+                                        <th>Device</th>
+                                        <th>Browser</th>
+                                        <th>Operating System</th>
+                                        <th>Visit Time</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="visitorsTable">
+                                    <tr>
+                                        <td colspan="10" class="empty">
+                                            Loading visitors…
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <p class="muted" style="margin-top:12px">
+                        MAC address may not be available from a normal website.
+                        Location is shown only if the visitor's browser supplied it.
+                    </p>
+                </section>
+
+                <!-- PROFILE -->
+                <section class="view" id="profileView">
+                    <div class="welcome">
+                        <h2>My Profile</h2>
+                        <p class="muted">
+                            These details are loaded from your registered account.
+                        </p>
+                    </div>
+
+                    <div class="card">
+                        <div class="profile-grid">
+                            <div class="profile-item">
+                                <label>User ID</label>
+                                <input class="field" id="profileId" readonly>
+                            </div>
+
+                            <div class="profile-item">
+                                <label>Username</label>
+                                <input class="field" id="profileUsername" readonly>
+                            </div>
+
+                            <div class="profile-item">
+                                <label>Account Type</label>
+                                <input class="field" id="profileType" readonly>
+                            </div>
+
+                            <div class="profile-item">
+                                <label>Share ID</label>
+                                <input class="field" id="profileShareId" readonly>
+                            </div>
+
+                            <div class="profile-item" style="grid-column:1/-1">
+                                <label>Share Link</label>
+                                <input class="field" id="profileShareUrl" readonly>
+                            </div>
+                        </div>
+
+                        <div class="notice">
+                            Profile information is read from the current database
+                            schema. Name, email and mobile fields can be added if
+                            they are collected during registration.
+                        </div>
+                    </div>
+                </section>
+
+                <p class="status" id="globalStatus" aria-live="polite"></p>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const API = {
+            dashboard: "/user/dashboard",
+            profile: "/user/profile",
+            visitors: "/user/visitors"
+        };
+
+        const token = localStorage.getItem("token");
+
+        let currentShareUrl = "";
+        let visitorRefreshTimer = null;
+        let searchTimer = null;
+
+        const $ = (id) => document.getElementById(id);
+
+        function escapeHTML(value) {
+            return String(value ?? "").replace(/[&<>"']/g, char => ({
+                "&": "&amp;",
+                "<": "&lt;",
+                ">": "&gt;",
+                '"': "&quot;",
+                "'": "&#39;"
+            })[char]);
+        }
+
+        function formatDate(value) {
+            if (!value) return "—";
+
+            const date = new Date(value);
+
+            if (Number.isNaN(date.getTime())) {
+                return String(value);
+            }
+
+            return date.toLocaleString();
+        }
+
+        async function apiPost(url, extra = {}) {
+            if (!token) {
+                throw new Error("Login token missing. Please login again.");
+            }
+
+            const response = await fetch(url, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    token: token,
+                    ...extra
+                })
+            });
+
+            const data = await response.json().catch(() => ({}));
+
+            if (response.status === 401) {
+                localStorage.removeItem("token");
+                throw new Error("Session expired. Please login again.");
+            }
+
+            if (!response.ok || data.status !== "success") {
+                throw new Error(
+                    data.message || "Request failed. Please try again."
+                );
+            }
+
+            return data;
+        }
+
+        function showError(message) {
+            $("globalStatus").textContent = message;
+            $("globalStatus").className = "status error";
+        }
+
+        function showSuccess(message) {
+            $("globalStatus").textContent = message;
+            $("globalStatus").className = "status success";
+        }
+
+        function mapURL(visitor) {
+            const lat = Number(visitor.latitude);
+            const lng = Number(visitor.longitude);
+
+            if (
+                visitor.latitude === null || visitor.latitude === undefined ||
+                visitor.longitude === null || visitor.longitude === undefined ||
+                !Number.isFinite(lat) || !Number.isFinite(lng) ||
+                lat < -90 || lat > 90 || lng < -180 || lng > 180
+            ) {
+                return "";
+            }
+
+            return `https://www.google.com/maps?q=${lat},${lng}`;
+        }
+
+        function renderRecent(visitors) {
+            const tbody = $("recentTable");
+
+            if (!visitors || visitors.length === 0) {
+                tbody.innerHTML = `
+                <tr><td colspan="5" class="empty">
+                    No visitors recorded yet.
+                </td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = visitors.map(visitor => {
+                const map = mapURL(visitor);
+
+                return `
+                <tr>
+                    <td>${escapeHTML(visitor.ip_address || "—")}</td>
+                    <td>${escapeHTML(visitor.device_type || "—")}</td>
+                    <td>${escapeHTML(visitor.browser || "—")}</td>
+                    <td>${map
+                        ? `<a class="map-link" href="${map}"
+                             target="_blank" rel="noopener noreferrer">View Map</a>`
+                        : "Unavailable"}</td>
+                    <td>${escapeHTML(formatDate(visitor.visited_at))}</td>
+                </tr>`;
+            }).join("");
+        }
+
+        async function loadDashboard() {
+            try {
+                const data = await apiPost(API.dashboard);
+
+                $("welcomeName").textContent = data.username || "User";
+                $("topUsername").textContent = data.username || "User";
+                $("totalVisitors").textContent = data.total_visitors ?? 0;
+                $("shareIdStat").textContent = data.share_id || "—";
+
+                currentShareUrl = data.share_url || "";
+                $("shareUrl").textContent = currentShareUrl || "Not configured";
+
+                renderRecent(data.recent_visitors || []);
+            } catch (error) {
+                showError(error.message);
+            }
+        }
+
+        function renderVisitors(visitors) {
+            const tbody = $("visitorsTable");
+
+            if (!visitors || visitors.length === 0) {
+                tbody.innerHTML = `
+                <tr><td colspan="10" class="empty">
+                    No visitors found.
+                </td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = visitors.map(visitor => {
+                const map = mapURL(visitor);
+
+                return `
+                <tr>
+                    <td>${escapeHTML(visitor.ip_address || "—")}</td>
+                    <td>${escapeHTML(visitor.mac_address || "Unavailable")}</td>
+                    <td>${escapeHTML(visitor.latitude ?? "—")}</td>
+                    <td>${escapeHTML(visitor.longitude ?? "—")}</td>
+                    <td>${map
+                        ? `<a class="map-link" href="${map}"
+                             target="_blank" rel="noopener noreferrer">Open Map</a>`
+                        : "Unavailable"}</td>
+                    <td>${escapeHTML(visitor.page_path || "—")}</td>
+                    <td>${escapeHTML(visitor.device_type || "—")}</td>
+                    <td>${escapeHTML(visitor.browser || "—")}</td>
+                    <td>${escapeHTML(visitor.operating_system || "—")}</td>
+                    <td>${escapeHTML(formatDate(visitor.visited_at))}</td>
+                </tr>`;
+            }).join("");
+        }
+
+        async function loadVisitors() {
+            try {
+                const data = await apiPost(API.visitors, {
+                    search: $("visitorSearch").value.trim()
+                });
+
+                renderVisitors(data.visitors || []);
+                $("visitorCount").textContent =
+                    `${data.total_visitors ?? 0} result(s)`;
+
+                $("globalStatus").textContent = "";
+            } catch (error) {
+                $("visitorsTable").innerHTML = `
+                <tr><td colspan="10" class="empty">
+                    ${escapeHTML(error.message)}
+                </td></tr>`;
+                showError(error.message);
+            }
+        }
+
+        async function loadProfile() {
+            try {
+                const data = await apiPost(API.profile);
+                const profile = data.profile;
+
+                $("profileId").value = profile.id ?? "";
+                $("profileUsername").value = profile.username ?? "";
+                $("profileType").value = profile.user_type ?? "";
+                $("profileShareId").value = profile.shared_id ?? "";
+                $("profileShareUrl").value = profile.share_url ?? "";
+
+                $("topUsername").textContent = profile.username || "User";
+                $("welcomeName").textContent = profile.username || "User";
+                $("accountType").textContent = profile.user_type || "User";
+            } catch (error) {
+                showError(error.message);
+            }
+        }
+
+        async function copyShareLink() {
+            if (!currentShareUrl) {
+                $("copyStatus").textContent = "Share link not available.";
+                return;
+            }
+
+            try {
+                await navigator.clipboard.writeText(currentShareUrl);
+                $("copyStatus").textContent = "Link copied successfully.";
+                $("copyStatus").className = "status success";
+            } catch {
+                // Fallback for browsers where Clipboard API is unavailable.
+                const input = document.createElement("textarea");
+                input.value = currentShareUrl;
+                input.style.position = "fixed";
+                input.style.opacity = "0";
+                document.body.appendChild(input);
+                input.select();
+
+                const copied = document.execCommand("copy");
+                input.remove();
+
+                $("copyStatus").textContent = copied
+                    ? "Link copied successfully."
+                    : "Copy failed. Please copy the link manually.";
+                $("copyStatus").className = copied
+                    ? "status success"
+                    : "status error";
+            }
+        }
+
+        function switchView(viewName) {
+            document.querySelectorAll(".view").forEach(view => {
+                view.classList.remove("active");
+            });
+
+            document.querySelectorAll(".nav-btn[data-view]").forEach(button => {
+                button.classList.toggle(
+                    "active",
+                    button.dataset.view === viewName
+                );
+            });
+
+            $(`${viewName}View`).classList.add("active");
+
+            const titles = {
+                dashboard: "Dashboard",
+                visitors: "My Visitors",
+                profile: "My Profile"
+            };
+
+            $("pageTitle").textContent = titles[viewName] || "Dashboard";
+
+            if (viewName === "dashboard") loadDashboard();
+            if (viewName === "visitors") loadVisitors();
+            if (viewName === "profile") loadProfile();
+        }
+
+        document.querySelectorAll(".nav-btn[data-view]").forEach(button => {
+            button.addEventListener("click", () => {
+                switchView(button.dataset.view);
+            });
+        });
+
+        $("copyLinkBtn").addEventListener("click", copyShareLink);
+        $("viewAllBtn").addEventListener("click", () => switchView("visitors"));
+        $("refreshVisitorsBtn").addEventListener("click", loadVisitors);
+
+        $("visitorSearch").addEventListener("input", () => {
+            clearTimeout(searchTimer);
+            searchTimer = setTimeout(loadVisitors, 300);
+        });
+
+        $("logoutBtn").addEventListener("click", () => {
+            localStorage.removeItem("token");
+            window.location.href = "/login";
+        });
+
+        async function initialize() {
+            if (!token) {
+                window.location.href = "/login";
+                return;
+            }
+
+            await loadProfile();
+            await loadDashboard();
+
+            visitorRefreshTimer = setInterval(() => {
+                const activeView = document.querySelector(".view.active");
+
+                if (activeView && activeView.id === "dashboardView") {
+                    loadDashboard();
+                }
+
+                if (activeView && activeView.id === "visitorsView") {
+                    loadVisitors();
+                }
+            }, 20000);
+        }
+
+        initialize();
+    </script>
+</body>
+
+</html>

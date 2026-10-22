@@ -40,7 +40,9 @@ def create_table():
                 operating_system TEXT,
                 latitude REAL,
                 longitude REAL,
-                accuracy REAL
+                accuracy REAL,
+                share_id TEXT,
+                mac_address TEXT
             )
         """)
 
