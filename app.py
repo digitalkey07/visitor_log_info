@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, jsonify
 from config import SECRET_KEY
 from database import create_table,migrate_database
+from werkzeug.middleware.proxy_fix import ProxyFix
 from routers.auth import auth_bp
 from routers.admin import admin_bp
 from routers.track import track_bp
@@ -11,6 +12,14 @@ from routers.shared import share_bp
 # =========================
 app = Flask(__name__)
 app.config["SECRET_KEY"] = SECRET_KEY
+
+
+# Sirf tab use karo jab hosting trusted proxy headers set karti ho.
+app.wsgi_app = ProxyFix(
+    app.wsgi_app,
+    x_for=1,
+    x_proto=1
+)
 # =========================
 # Register Blueprints
 # =========================
