@@ -29,6 +29,8 @@ body {
   position: fixed;
   top: 5px;
   right: 5px;
+  cursor: pointer;
+  user-select: none;
 }
 .glow {
   position: fixed;
