@@ -2,6 +2,7 @@
 from flask import Blueprint, request, jsonify, render_template
 from database import get_db
 from utils.validator import validate_token
+from config import USER_TYPE
 
 admin_bp = Blueprint("admin", __name__)
 
@@ -39,8 +40,8 @@ def admin():
         user = conn.execute("""
             SELECT id, username, user_type
             FROM users
-            WHERE id = ? AND user_type = 'admin'
-        """, (token_data["user_id"],)).fetchone()
+            WHERE id = ? AND user_type = ?
+        """, (token_data["user_id"],USER_TYPE)).fetchone()
 
         if not user:
             return jsonify({
@@ -71,4 +72,50 @@ def admin():
         "status": "success",
         "username": user["username"],
         "logs": visitor_logs
+    }), 200
+# ======================================
+# ADMIN PAGE + USER DATA API
+# ======================================
+@admin_bp.route("/admin/users", methods=["POST"])
+def get_registered_users():
+    data = request.get_json(silent=True) or {}
+    token = data.get("token")
+
+    if not token:
+        return jsonify({
+            "status": "error",
+            "error": "Login required"
+        }), 401
+
+    token_data = validate_token(token)
+
+    if not token_data:
+        return jsonify({
+            "status": "error",
+            "error": "Invalid or expired token"
+        }), 401
+
+    with get_db() as conn:
+        admin_user = conn.execute("""
+            SELECT id, username, user_type
+            FROM users
+            WHERE id = ? AND user_type = ?
+        """, (token_data["user_id"],USER_TYPE)).fetchone()
+
+        if not admin_user:  
+            return jsonify({
+                "status": "error",
+                "error": "Admin access required"
+            }), 403
+
+        users = conn.execute("""
+            SELECT id, username, user_type, shared_id
+            FROM users
+            ORDER BY id DESC
+        """).fetchall()
+
+    return jsonify({
+        "status": "success",
+        "users": [dict(user) for user in users],
+        "total_users": len(users)
     }), 200

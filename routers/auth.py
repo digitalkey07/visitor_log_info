@@ -5,7 +5,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from database import get_db
 import sqlite3
 from utils.validator import create_token
-from config import EMAIL
+from config import EMAIL,USER_TYPE
 
 
 auth_bp = Blueprint('auth',__name__)
@@ -127,13 +127,14 @@ def register():
      
             # Default user role
             user_type = "user"
-            if EMAIL and EMAIL == username:
-                user_type = 'admin'
-
             # NOTE: Email ko username ke roop mein use karne se
-            # admin role automatic dena tabhi safe hai jab
-            # email ownership verify ki gayi ho.
-            # Public registration mein user_type = "user" rakho.
+                # admin role automatic dena tabhi safe hai jab
+                # email ownership verify ki gayi ho.
+                # Public registration mein user_type = "user" rakho.
+            if EMAIL and EMAIL == username:
+                user_type = USER_TYPE
+
+    
 
             shared_id = secrets.token_urlsafe(16)
 

@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VisitorTrack | Admin Dashboard</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+</head>
+
+<body>
+    <div class="layout">
+
+        <!-- Sidebar: Same as existing design -->
+        <aside class="sidebar">
+            <div class="brand">Visitor<span>Track</span></div>
+
+            <div class="nav-heading">Main Menu</div>
+
+            <nav>
+                <a href="/admin" class="nav-link active">▦ Dashboard</a>
+                <a href="/admin/users" class="nav-link">Users</a>
+            </nav>
+
+            <div class="sidebar-bottom">
+                <p>Admin Panel<br>Visitor Monitoring</p>
+                <button type="button" class="logout-btn" id="logoutBtn">
+                    Logout
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Dashboard -->
+        <main class="main">
+
+            <!-- Header: Same as existing design -->
+            <header class="topbar">
+                <div>
+                    <h1 class="page-title">Dashboard</h1>
+                    <p class="page-subtitle">
+                        Monitor registered users and account information.
+                    </p>
+                </div>
+
+                <div class="admin-profile">
+                    <div class="avatar" id="avatar">A</div>
+                    <div>
+                        <div class="admin-name" id="adminName">Admin</div>
+                        <div class="admin-role">Administrator</div>
+                    </div>
+                </div>
+            </header>
+
+            <div class="message" id="messageBox" role="status" aria-live="polite"></div>
+
+            <!-- Connection status -->
+            <div class="status-bar">
+                <span class="status-dot loading" id="statusDot"></span>
+                <span id="connectionStatus">Connecting to server...</span>
+                <span class="status-spacer"></span>
+                <span id="lastUpdated">Last updated: --</span>
+            </div>
+
+            <!-- User Statistics -->
+            <section class="stats">
+
+                <div class="stat-card">
+                    <div class="stat-label">Total Registered Users</div>
+                    <div class="stat-value" id="totalUsers">0</div>
+                    <div class="stat-note">All registered accounts</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-label">Normal Users</div>
+                    <div class="stat-value" id="normalUsers">0</div>
+                    <div class="stat-note">Accounts with user role</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-label">Admin Accounts</div>
+                    <div class="stat-value" id="adminUsers">0</div>
+                    <div class="stat-note">Accounts with admin role</div>
+                </div>
+
+            </section>
+
+            <!-- Registered Users Table -->
+            <section class="panel" id="registered-users">
+
+                <div class="panel-header">
+                    <div>
+                        <h2 class="panel-title">Registered Users</h2>
+                        <p class="panel-subtitle">
+                            All registered accounts from the database.
+                        </p>
+                    </div>
+
+                    <div class="toolbar">
+                        <input type="search" id="userSearch" class="search-input" placeholder="Search username or ID..."
+                            aria-label="Search registered users">
+
+                        <button type="button" class="refresh-btn" id="refreshUsers">
+                            ↻ Refresh
+                        </button>
+                    </div>
+                </div>
+
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>User ID</th>
+                                <th>Username</th>
+                                <th>Role</th>
+                                <th>Shared ID</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="usersTableBody">
+                            <tr>
+                                <td colspan="4" class="empty-state">
+                                    Loading registered users...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="table-footer">
+                    <span id="usersCount">Showing 0 users</span>
+                    <span>Auto refresh: every 20 seconds</span>
+                </div>
+
+            </section>
+
+        </main>
+    </div>
+
+    <script>
+        "use strict";
+
+        // Flask endpoint that returns registered users as JSON.
+        const API_URL = "/admin/users";
+        const REFRESH_INTERVAL = 20000;
+
+        const elements = {
+            messageBox: document.getElementById("messageBox"),
+            statusDot: document.getElementById("statusDot"),
+            connectionStatus: document.getElementById("connectionStatus"),
+            lastUpdated: document.getElementById("lastUpdated"),
+
+            adminName: document.getElementById("adminName"),
+            avatar: document.getElementById("avatar"),
+
+            totalUsers: document.getElementById("totalUsers"),
+            normalUsers: document.getElementById("normalUsers"),
+            adminUsers: document.getElementById("adminUsers"),
+
+            tableBody: document.getElementById("usersTableBody"),
+            usersCount: document.getElementById("usersCount"),
+
+            searchInput: document.getElementById("userSearch"),
+            refreshBtn: document.getElementById("refreshUsers"),
+            logoutBtn: document.getElementById("logoutBtn")
+        };
+
+        let allUsers = [];
+        let requestInProgress = false;
+        let refreshTimer = null;
+        let messageTimer = null;
+
+        function getToken() {
+            return localStorage.getItem("token");
+        }
+
+        function showMessage(message, type = "info") {
+            clearTimeout(messageTimer);
+
+            elements.messageBox.textContent = message;
+            elements.messageBox.className = "message show " + type;
+
+            messageTimer = setTimeout(() => {
+                elements.messageBox.className = "message";
+            }, 6000);
+        }
+
+        function setConnectionStatus(status, message) {
+            elements.statusDot.className = "status-dot " + status;
+            elements.connectionStatus.textContent = message;
+        }
+
+        function setLoading(loading) {
+            elements.refreshBtn.disabled = loading;
+            elements.refreshBtn.textContent =
+                loading ? "Loading..." : "↻ Refresh";
+        }
+
+        function addCell(row, value, className = "") {
+            const cell = document.createElement("td");
+
+            cell.textContent =
+                value === null || value === undefined || value === ""
+                    ? "—"
+                    : String(value);
+
+            if (className) {
+                cell.className = className;
+            }
+
+            row.appendChild(cell);
+        }
+
+        function renderUsers() {
+            const query = elements.searchInput.value
+                .trim()
+                .toLowerCase();
+
+            const filteredUsers = allUsers.filter(user => {
+                const searchableText = [
+                    user.id,
+                    user.username,
+                    user.user_type,
+                    user.shared_id
+                ]
+                    .map(value => value ?? "")
+                    .join(" ")
+                    .toLowerCase();
+
+                return searchableText.includes(query);
+            });
+
+            const fragment = document.createDocumentFragment();
+
+            if (filteredUsers.length === 0) {
+                const row = document.createElement("tr");
+                const cell = document.createElement("td");
+
+                cell.colSpan = 4;
+                cell.className = "empty-state";
+                cell.textContent = query
+                    ? "No matching users found."
+                    : "No registered users found.";
+
+                row.appendChild(cell);
+                fragment.appendChild(row);
+            } else {
+                filteredUsers.forEach(user => {
+                    const row = document.createElement("tr");
+
+                    addCell(row, user.id, "id-cell");
+                    addCell(row, user.username);
+
+                    const roleCell = document.createElement("td");
+                    const badge = document.createElement("span");
+
+                    badge.className = "device-badge";
+                    badge.textContent = user.user_type || "user";
+
+                    roleCell.appendChild(badge);
+                    row.appendChild(roleCell);
+
+                    addCell(row, user.shared_id);
+
+                    fragment.appendChild(row);
+                });
+            }
+
+            elements.tableBody.replaceChildren(fragment);
+
+            elements.usersCount.textContent =
+                `Showing ${filteredUsers.length} of ${allUsers.length} users`;
+        }
+
+        function updateStatistics(users) {
+            elements.totalUsers.textContent = users.length;
+
+            elements.normalUsers.textContent = users.filter(
+                user => user.user_type === "user"
+            ).length;
+
+            elements.adminUsers.textContent = users.filter(
+                user => user.user_type === "admin"
+            ).length;
+        }
+
+        function showTableError(message) {
+            const row = document.createElement("tr");
+            const cell = document.createElement("td");
+
+            cell.colSpan = 4;
+            cell.className = "empty-state";
+            cell.textContent = message;
+
+            row.appendChild(cell);
+            elements.tableBody.replaceChildren(row);
+        }
+
+        async function loadUsers() {
+            if (requestInProgress) {
+                return;
+            }
+
+            const token = getToken();
+
+            if (!token) {
+                stopAutoRefresh();
+                window.location.replace("/login");
+                return;
+            }
+
+            requestInProgress = true;
+            setLoading(true);
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Accept": "application/json"
+                    },
+                    body: JSON.stringify({ token: token }),
+                    cache: "no-store"
+                });
+
+                const contentType =
+                    response.headers.get("content-type") || "";
+
+                if (!contentType.includes("application/json")) {
+                    throw new Error(
+                        "API ne JSON return nahi kiya. Flask /admin/users route check karo."
+                    );
+                }
+
+                const data = await response.json();
+
+                if (response.status === 401) {
+                    stopAutoRefresh();
+                    localStorage.removeItem("token");
+                    window.location.replace("/login");
+                    return;
+                }
+
+                if (response.status === 403) {
+                    setConnectionStatus("error", "Access denied");
+
+                    showMessage(
+                        data.error || "Admin access required.",
+                        "error"
+                    );
+                    return;
+                }
+
+                if (!response.ok) {
+                    throw new Error(
+                        data.error || "Registered users load nahi hue."
+                    );
+                }
+
+                if (
+                    data.status !== "success" ||
+                    !Array.isArray(data.users)
+                ) {
+                    throw new Error(
+                        "API response format galat hai. users array missing hai."
+                    );
+                }
+
+                allUsers = data.users;
+
+                if (data.username) {
+                    elements.adminName.textContent = data.username;
+                    elements.avatar.textContent =
+                        data.username.charAt(0).toUpperCase();
+                }
+
+                updateStatistics(allUsers);
+                renderUsers();
+
+                elements.lastUpdated.textContent =
+                    "Last updated: " +
+                    new Date().toLocaleTimeString();
+
+                setConnectionStatus(
+                    "connected",
+                    "Connected • Users updated"
+                );
+
+                elements.messageBox.className = "message";
+
+            } catch (error) {
+                console.error("Users dashboard error:", error);
+
+                setConnectionStatus("error", "Connection error");
+
+                showMessage(
+                    error.message || "Server se connection nahi ho paya.",
+                    "error"
+                );
+
+                // Purana data available ho to screen par rehne do.
+                if (allUsers.length === 0) {
+                    showTableError(
+                        "Users load nahi hue. Flask API aur server logs check karo."
+                    );
+                }
+
+            } finally {
+                requestInProgress = false;
+                setLoading(false);
+            }
+        }
+
+        function startAutoRefresh() {
+            stopAutoRefresh();
+
+            refreshTimer = setInterval(() => {
+                if (!document.hidden) {
+                    loadUsers();
+                }
+            }, REFRESH_INTERVAL);
+        }
+
+        function stopAutoRefresh() {
+            if (refreshTimer !== null) {
+                clearInterval(refreshTimer);
+                refreshTimer = null;
+            }
+        }
+
+        elements.refreshBtn.addEventListener("click", loadUsers);
+
+        elements.searchInput.addEventListener("input", renderUsers);
+
+        elements.logoutBtn.addEventListener("click", () => {
+            stopAutoRefresh();
+            localStorage.removeItem("token");
+            window.location.replace("/login");
+        });
+
+        document.addEventListener("visibilitychange", () => {
+            if (document.hidden) {
+                stopAutoRefresh();
+            } else {
+                loadUsers();
+                startAutoRefresh();
+            }
+        });
+
+        // Initial AJAX request and automatic updates.
+        loadUsers();
+        startAutoRefresh();
+    </script>
+
+</body>
+
+</html>
