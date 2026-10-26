@@ -140,37 +140,69 @@ def track_visitor():
         # Har visit ko alag record ke roop mein save karo.
         # Isse ek hi IP se alag users ke share links par
         # aane wale visits ek-doosre ke records overwrite nahi karenge.
+            
+        exist_visitor = conn.execute("""
+            SELECT id, ip_address
+            FROM visitor_logs
+            WHERE share_id = ? AND ip_address = ?
+            ORDER BY id DESC
+            LIMIT 1
+        """, (shared_id, ip)).fetchone()
 
-        cursor = conn.execute("""
-            INSERT INTO visitor_logs (
-                ip_address,
-                user_agent,
+        if exist_visitor is None:
+            cursor = conn.execute("""
+                INSERT INTO visitor_logs (
+                    ip_address,
+                    user_agent,
+                    page_path,
+                    visited_at,
+                    device_type,
+                    browser,
+                    operating_system,
+                    share_id
+                )
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            """, (
+                ip,
+                ua,
                 page_path,
                 visited_at,
-                device_type,
+                device,
                 browser,
-                operating_system,
-                share_id
-            )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-        """, (
-            ip,
-            ua,
-            page_path,
-            visited_at,
-            device,
-            browser,
-            os_name,
-            shared_id
-        ))
+                os_name,
+                shared_id
+            ))
 
-        visitor_id = cursor.lastrowid
+            visitor_id = cursor.lastrowid
 
-    return jsonify({
-        "status": "success",
-        "message": "Visitor recorded successfully",
-        "visitor_id": visitor_id
-    }), 201
+        else:
+            visitor_id = exist_visitor["id"]
+
+            conn.execute("""
+                UPDATE visitor_logs
+                SET user_agent = ?,
+                    page_path = ?,
+                    visited_at = ?,
+                    device_type = ?,
+                    browser = ?,
+                    operating_system = ?
+                WHERE id = ? AND share_id = ?
+            """, (
+                ua,
+                page_path,
+                visited_at,
+                device,
+                browser,
+                os_name,
+                visitor_id,
+                shared_id
+            ))
+
+            return jsonify({
+                "status": "success",
+                "message": "Visitor recorded successfully",
+                "visitor_id": visitor_id
+            }), 201
 
 
 
