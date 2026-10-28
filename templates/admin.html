@@ -5,24 +5,124 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VisitorTrack | Admin Dashboard</title>
-    <link rel="stylesheet" href="{{url_for('static',filename='css/admin.css')}}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+
+    <style>
+        .festival-form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 16px;
+            padding: 18px 0;
+        }
+
+        .festival-form-grid label {
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text, #344054);
+        }
+
+        .festival-form-grid input:not([type="color"]):not([type="checkbox"]),
+        .festival-form-grid textarea {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 11px 12px;
+            border: 1px solid #d0d5dd;
+            border-radius: 8px;
+            background: #fff;
+            font: inherit;
+            color: #222;
+        }
+
+        .festival-form-grid input[type="color"] {
+            width: 100%;
+            height: 42px;
+            border: 1px solid #d0d5dd;
+            border-radius: 8px;
+            padding: 4px;
+            background: #fff;
+        }
+
+        .festival-form-grid textarea {
+            resize: vertical;
+            min-height: 85px;
+        }
+
+        .festival-form-grid small {
+            font-weight: 400;
+            color: #667085;
+        }
+
+        .festival-form-grid .full-width {
+            grid-column: 1 / -1;
+        }
+
+        .festival-form-grid .festival-checkbox {
+            flex-direction: row;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .festival-form-actions {
+            padding: 0 0 16px;
+        }
+
+        .festival-actions {
+            display: flex;
+            gap: 7px;
+            flex-wrap: wrap;
+        }
+
+        .festival-actions button {
+            white-space: nowrap;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        @media (max-width: 700px) {
+            .festival-form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .festival-form-grid .full-width {
+                grid-column: auto;
+            }
+
+            .toolbar {
+                flex-wrap: wrap;
+            }
+        }
+    </style>
 </head>
 
 <body>
     <div class="layout">
+
+        <!-- SIDEBAR -->
         <aside class="sidebar">
             <div class="brand">Visitor<span>Track</span></div>
 
             <div class="nav-heading">MAIN MENU</div>
+
             <nav>
                 <a href="#dashboard" class="nav-link active" data-view="dashboard">
                     <span class="nav-icon">▦</span> Dashboard
                 </a>
+
                 <a href="#users" class="nav-link" data-view="users">
                     <span class="nav-icon">♟</span> Users
                 </a>
+
                 <a href="#visitors" class="nav-link" data-view="visitors">
                     <span class="nav-icon">◷</span> Visitors
+                </a>
+
+                <a href="#festivals" class="nav-link" data-view="festivals">
+                    <span class="nav-icon">🎉</span> Festivals
                 </a>
             </nav>
 
@@ -33,7 +133,9 @@
             </div>
         </aside>
 
+        <!-- MAIN -->
         <main class="main">
+
             <header class="topbar">
                 <div>
                     <h1 class="page-title" id="pageTitle">Dashboard</h1>
@@ -52,8 +154,10 @@
             </header>
 
             <div class="content">
+
                 <div class="status-bar">
-                    <div><span class="status-dot" id="statusDot"></span>
+                    <div>
+                        <span class="status-dot" id="statusDot"></span>
                         <span id="connectionStatus">Connecting to server...</span>
                     </div>
                     <div>Last updated: <span id="lastUpdated">—</span></div>
@@ -61,8 +165,9 @@
 
                 <div class="message" id="messageBox" role="alert"></div>
 
-                <!-- DASHBOARD VIEW -->
+                <!-- DASHBOARD -->
                 <section id="dashboardView">
+
                     <div class="stats">
                         <div class="stat-card">
                             <div class="stat-top">
@@ -102,8 +207,11 @@
                         <div class="panel-header">
                             <div>
                                 <h2 class="panel-title">User Performance</h2>
-                                <p class="panel-subtitle">Visitors received through each user's share link.</p>
+                                <p class="panel-subtitle">
+                                    Visitors received through each user's share link.
+                                </p>
                             </div>
+
                             <div class="toolbar">
                                 <input class="search-input" id="userSearch" type="search" placeholder="Search users...">
                                 <button class="btn" id="refreshDashboard">↻ Refresh</button>
@@ -129,7 +237,10 @@
                                 </tbody>
                             </table>
                         </div>
-                        <div class="info-banner">ⓘ Click “View” to see visitors attributed to that user.</div>
+
+                        <div class="info-banner">
+                            ⓘ Click “View” to see visitors attributed to that user.
+                        </div>
                         <div class="table-footer" id="dashboardUsersCount">Showing 0 users</div>
                     </section>
 
@@ -137,10 +248,15 @@
                         <div class="panel-header">
                             <div>
                                 <h2 class="panel-title">Recent Visitor Activity</h2>
-                                <p class="panel-subtitle">Latest tracked visitor records across all users.</p>
+                                <p class="panel-subtitle">
+                                    Latest tracked visitor records across all users.
+                                </p>
                             </div>
-                            <button class="btn btn-primary" id="viewAllVisitors">View All Visitors →</button>
+                            <button class="btn btn-primary" id="viewAllVisitors">
+                                View All Visitors →
+                            </button>
                         </div>
+
                         <div class="table-wrapper">
                             <table class="table">
                                 <thead>
@@ -166,20 +282,24 @@
                     </section>
                 </section>
 
-                <!-- USERS VIEW -->
+                <!-- USERS -->
                 <section id="usersView" class="hidden">
                     <section class="panel">
                         <div class="panel-header">
                             <div>
                                 <h2 class="panel-title">Registered Users</h2>
-                                <p class="panel-subtitle">Select a user to inspect their referral visitors.</p>
+                                <p class="panel-subtitle">
+                                    Select a user to inspect their referral visitors.
+                                </p>
                             </div>
+
                             <div class="toolbar">
                                 <input class="search-input" id="usersSearch" type="search"
                                     placeholder="Search username or shared ID...">
                                 <button class="btn" id="refreshUsers">↻ Refresh</button>
                             </div>
                         </div>
+
                         <div class="table-wrapper">
                             <table class="table">
                                 <thead>
@@ -207,10 +327,13 @@
                         <div class="panel-header">
                             <div>
                                 <h2 class="panel-title" id="selectedUserTitle">User Visitors</h2>
-                                <p class="panel-subtitle">Visitors linked to the selected shared ID.</p>
+                                <p class="panel-subtitle">
+                                    Visitors linked to the selected shared ID.
+                                </p>
                             </div>
                             <button class="btn" id="backToUsers">← Back to users</button>
                         </div>
+
                         <div class="table-wrapper">
                             <table class="table">
                                 <thead>
@@ -235,20 +358,24 @@
                     </section>
                 </section>
 
-                <!-- ALL VISITORS VIEW -->
+                <!-- ALL VISITORS -->
                 <section id="visitorsView" class="hidden">
                     <section class="panel">
                         <div class="panel-header">
                             <div>
                                 <h2 class="panel-title">All Visitors</h2>
-                                <p class="panel-subtitle">Search and monitor tracked visitor activity.</p>
+                                <p class="panel-subtitle">
+                                    Search and monitor tracked visitor activity.
+                                </p>
                             </div>
+
                             <div class="toolbar">
                                 <input class="search-input" id="visitorSearch" type="search"
                                     placeholder="Search IP, page, device, referrer...">
                                 <button class="btn" id="refreshVisitors">↻ Refresh</button>
                             </div>
                         </div>
+
                         <div class="table-wrapper">
                             <table class="table">
                                 <thead>
@@ -273,29 +400,196 @@
                         <div class="table-footer" id="visitorsCount">Showing 0 records</div>
                     </section>
                 </section>
+
+                <!-- FESTIVALS -->
+                <section id="festivalsView" class="hidden">
+                    <section class="panel">
+                        <div class="panel-header">
+                            <div>
+                                <h2 class="panel-title">Festival Management</h2>
+                                <p class="panel-subtitle">
+                                    Create and manage festival greeting templates.
+                                </p>
+                            </div>
+
+                            <div class="toolbar">
+                                <input class="search-input" id="festivalSearch" type="search"
+                                    placeholder="Search festivals...">
+                                <button class="btn btn-primary" id="newFestivalBtn">
+                                    + New Festival
+                                </button>
+                                <button class="btn" id="refreshFestivals">↻ Refresh</button>
+                            </div>
+                        </div>
+
+                        <!-- FESTIVAL FORM -->
+                        <section id="festivalFormPanel" class="panel hidden">
+                            <div class="panel-header">
+                                <div>
+                                    <h2 class="panel-title" id="festivalFormTitle">Create Festival</h2>
+                                    <p class="panel-subtitle">
+                                        Enter the content that will appear on the greeting page.
+                                    </p>
+                                </div>
+                                <button class="btn" type="button" id="cancelFestivalBtn">Cancel</button>
+                            </div>
+
+                            <form id="festivalForm">
+                                <input type="hidden" id="festivalId">
+
+                                <div class="festival-form-grid">
+                                    <label>
+                                        Festival Name *
+                                        <input id="festivalName" required maxlength="100" placeholder="e.g. Durga Puja">
+                                    </label>
+
+                                    <label>
+                                        Page Title *
+                                        <input id="festivalTitle" required maxlength="200"
+                                            placeholder="शुभ दुर्गा पूजा">
+                                    </label>
+
+                                    <label>
+                                        Subtitle
+                                        <input id="festivalSubtitle" maxlength="200" placeholder="Shubho Durga Puja!">
+                                    </label>
+
+                                    <label>
+                                        Eyebrow Text
+                                        <input id="festivalEyebrow" maxlength="200"
+                                            placeholder="एक छोटा-सा सरप्राइज़ ✨">
+                                    </label>
+
+                                    <label class="full-width">
+                                        Greeting Message
+                                        <textarea id="festivalMessage" rows="3"
+                                            placeholder="Festival greeting message..."></textarea>
+                                    </label>
+
+                                    <label class="full-width">
+                                        Image Path
+                                        <input id="festivalImage" maxlength="500" placeholder="images/durga.jpeg">
+                                        <small>Static folder ke relative path ka use kar sakte ho.</small>
+                                    </label>
+
+                                    <label>
+                                        Download Instruction
+                                        <input id="festivalDownloadText" maxlength="200"
+                                            placeholder="फोटो डाउनलोड करने के लिए यहाँ क्लिक करें">
+                                    </label>
+
+                                    <label>
+                                        Download Button Text
+                                        <input id="festivalDownloadButton" maxlength="100"
+                                            placeholder="फोटो डाउनलोड करें">
+                                    </label>
+
+                                    <label>
+                                        Surprise Button Text
+                                        <input id="festivalSurpriseButton" maxlength="100"
+                                            placeholder="शुभकामना खोलें 🎁">
+                                    </label>
+
+                                    <label>
+                                        Footer Text
+                                        <input id="festivalFooter" maxlength="300"
+                                            placeholder="प्रेम, रोशनी और उत्सव के नाम ✨">
+                                    </label>
+
+                                    <label class="full-width">
+                                        Wishes (har line ek wish)
+                                        <textarea id="festivalWishes" rows="4"
+                                            placeholder="पहली शुभकामना 🌺&#10;दूसरी शुभकामना 🪔"></textarea>
+                                    </label>
+
+                                    <label>
+                                        Background Color
+                                        <input id="festivalBackground" type="color" value="#fff4f7">
+                                    </label>
+
+                                    <label>
+                                        Card Color
+                                        <input id="festivalCardColor" type="color" value="#ffffff">
+                                    </label>
+
+                                    <label>
+                                        Text Color
+                                        <input id="festivalTextColor" type="color" value="#333333">
+                                    </label>
+
+                                    <label>
+                                        Theme Color
+                                        <input id="festivalThemeColor" type="color" value="#b83280">
+                                    </label>
+
+                                    <label class="festival-checkbox">
+                                        <input id="festivalActive" type="checkbox" checked>
+                                        Active — users ko festival select karne dein
+                                    </label>
+                                </div>
+
+                                <div class="toolbar festival-form-actions">
+                                    <button class="btn btn-primary" type="submit" id="saveFestivalBtn">
+                                        Save Festival
+                                    </button>
+                                    <button class="btn" type="button" id="resetFestivalBtn">
+                                        Reset Form
+                                    </button>
+                                </div>
+                            </form>
+                        </section>
+
+                        <!-- FESTIVAL LIST -->
+                        <div class="table-wrapper">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Festival</th>
+                                        <th>Title</th>
+                                        <th>Theme</th>
+                                        <th>Status</th>
+                                        <th>Created</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="festivalsTableBody">
+                                    <tr>
+                                        <td colspan="7" class="empty-state">Loading festivals...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="table-footer" id="festivalsCount">Showing 0 festivals</div>
+                    </section>
+                </section>
+
             </div>
         </main>
     </div>
 
     <script>
-
         (() => {
             "use strict";
 
-            // Same-origin Flask API routes.
             const API = {
                 dashboard: "/admin/dashboard",
                 users: "/admin/users",
                 visitors: "/admin/visitors",
-                userVisitors: id => `/admin/users/${encodeURIComponent(id)}/visitors`
+                userVisitors: id => `/admin/users/${encodeURIComponent(id)}/visitors`,
+                festivals: "/admin/festivals",
+                festivalItem: id => `/admin/festivals/${encodeURIComponent(id)}`
             };
 
             const $ = id => document.getElementById(id);
+
             const state = {
                 view: "dashboard",
                 users: [],
                 visitors: [],
                 dashboardVisitors: [],
+                festivals: [],
                 selectedUser: null
             };
 
@@ -314,13 +608,19 @@
             function setConnection(ok, message) {
                 $("statusDot").classList.toggle("error", !ok);
                 $("connectionStatus").textContent = message;
-                if (ok) $("lastUpdated").textContent = new Date().toLocaleTimeString();
+
+                if (ok) {
+                    $("lastUpdated").textContent = new Date().toLocaleTimeString();
+                }
             }
 
             function escapeHTML(value) {
                 return String(value ?? "").replace(/[&<>"']/g, char => ({
-                    "&": "&amp;", "<": "&lt;", ">": "&gt;",
-                    '"': "&quot;", "'": "&#39;"
+                    "&": "&amp;",
+                    "<": "&lt;",
+                    ">": "&gt;",
+                    '"': "&quot;",
+                    "'": "&#39;"
                 })[char]);
             }
 
@@ -329,6 +629,8 @@
                     throw new Error("Login token nahi mila. Dobara login karein.");
                 }
 
+                const bodyData = options.body ? JSON.parse(options.body) : {};
+
                 const response = await fetch(url, {
                     ...options,
                     headers: {
@@ -336,12 +638,13 @@
                         ...(options.headers || {})
                     },
                     body: JSON.stringify({
-                        ...(options.body ? JSON.parse(options.body) : {}),
+                        ...bodyData,
                         token
                     })
                 });
 
                 let data;
+
                 try {
                     data = await response.json();
                 } catch {
@@ -354,7 +657,9 @@
                 }
 
                 if (!response.ok || data.status === "error" || data.error) {
-                    throw new Error(data.error || data.message || `Request failed (${response.status})`);
+                    throw new Error(
+                        data.error || data.message || `Request failed (${response.status})`
+                    );
                 }
 
                 return data;
@@ -370,88 +675,129 @@
             }
 
             function shareCell(sharedId) {
-                if (!sharedId) return '<span class="badge gray">No link</span>';
+                if (!sharedId) {
+                    return '<span class="badge gray">No link</span>';
+                }
+
                 const url = shareURL(sharedId);
-                return `<a class="share-link" href="${escapeHTML(url)}" target="_blank" rel="noopener">
-                    ${escapeHTML(url)}
-                </a>
-                <button class="copy-btn" data-copy="${escapeHTML(url)}" title="Copy share link">▢</button>`;
+
+                return `
+            <a class="share-link" href="${escapeHTML(url)}"
+               target="_blank" rel="noopener">${escapeHTML(url)}</a>
+            <button class="copy-btn" data-copy="${escapeHTML(url)}"
+                    title="Copy share link">▢</button>
+        `;
             }
 
             function formatDate(value) {
                 if (!value) return "—";
+
                 const date = new Date(value);
-                return Number.isNaN(date.getTime()) ? escapeHTML(value) : escapeHTML(date.toLocaleString());
+
+                return Number.isNaN(date.getTime())
+                    ? escapeHTML(value)
+                    : escapeHTML(date.toLocaleString());
             }
 
             function visitorRow(visitor, index, includeReferrer = true) {
                 const columns = includeReferrer ? 8 : 7;
-                if (!visitor) return emptyRow(columns, "No visitor records found.");
 
-                return `<tr>
-            <td>${escapeHTML(visitor.id ?? index + 1)}</td>
-            <td>${escapeHTML(visitor.ip_address || "—")}</td>
-            <td>${escapeHTML(visitor.page_path || "—")}</td>
-            <td><span class="badge">${escapeHTML(visitor.device_type || "Unknown")}</span></td>
-            <td>${escapeHTML(visitor.browser || "Unknown")}</td>
-            <td>${escapeHTML(visitor.operating_system || "Unknown")}</td>
-            ${includeReferrer ? `<td>${escapeHTML(visitor.referrer_username || "Direct / Unknown")}</td>` : ""}
-            <td>${formatDate(visitor.visited_at)}</td>
-        </tr>`;
+                if (!visitor) {
+                    return emptyRow(columns, "No visitor records found.");
+                }
+
+                return `
+            <tr>
+                <td>${escapeHTML(visitor.id ?? index + 1)}</td>
+                <td>${escapeHTML(visitor.ip_address || "—")}</td>
+                <td>${escapeHTML(visitor.page_path || "—")}</td>
+                <td><span class="badge">${escapeHTML(visitor.device_type || "Unknown")}</span></td>
+                <td>${escapeHTML(visitor.browser || "Unknown")}</td>
+                <td>${escapeHTML(visitor.operating_system || "Unknown")}</td>
+                ${includeReferrer
+                        ? `<td>${escapeHTML(visitor.referrer_username || "Direct / Unknown")}</td>`
+                        : ""}
+                <td>${formatDate(visitor.visited_at)}</td>
+            </tr>
+        `;
             }
 
             function renderDashboardUsers(users) {
                 const query = $("userSearch").value.trim().toLowerCase();
+
                 const filtered = users.filter(user =>
-                    `${user.username || ""} ${user.shared_id || ""}`.toLowerCase().includes(query)
+                    `${user.username || ""} ${user.shared_id || ""}`
+                        .toLowerCase().includes(query)
                 );
 
-                $("dashboardUsersBody").innerHTML = filtered.length ? filtered.map((user, index) => `
-            <tr>
-                <td>${index + 1}</td>
-                <td><strong>${escapeHTML(user.username)}</strong></td>
-                <td>${escapeHTML(user.shared_id || "—")}</td>
-                <td>${shareCell(user.shared_id)}</td>
-                <td><strong>${Number(user.visitor_count || 0)}</strong></td>
-                <td><button class="view-btn" data-view-user="${escapeHTML(user.id)}">◉ View</button></td>
-            </tr>
-        `).join("") : emptyRow(6, "No matching users found.");
+                $("dashboardUsersBody").innerHTML = filtered.length
+                    ? filtered.map((user, index) => `
+                <tr>
+                    <td>${index + 1}</td>
+                    <td><strong>${escapeHTML(user.username)}</strong></td>
+                    <td>${escapeHTML(user.shared_id || "—")}</td>
+                    <td>${shareCell(user.shared_id)}</td>
+                    <td><strong>${Number(user.visitor_count || 0)}</strong></td>
+                    <td>
+                        <button class="view-btn" data-view-user="${escapeHTML(user.id)}">
+                            ◉ View
+                        </button>
+                    </td>
+                </tr>
+            `).join("")
+                    : emptyRow(6, "No matching users found.");
 
-                $("dashboardUsersCount").textContent = `Showing ${filtered.length} of ${users.length} users`;
+                $("dashboardUsersCount").textContent =
+                    `Showing ${filtered.length} of ${users.length} users`;
             }
 
             function renderUsers() {
                 const query = $("usersSearch").value.trim().toLowerCase();
+
                 const users = state.users.filter(user =>
                     `${user.username || ""} ${user.shared_id || ""} ${user.user_type || ""}`
                         .toLowerCase().includes(query)
                 );
 
-                $("usersTableBody").innerHTML = users.length ? users.map(user => `
-            <tr>
-                <td>${escapeHTML(user.id)}</td>
-                <td><strong>${escapeHTML(user.username)}</strong></td>
-                <td><span class="badge ${user.user_type === "admin" ? "green" : ""}">
-                    ${escapeHTML(user.user_type || "user")}</span></td>
-                <td>${escapeHTML(user.shared_id || "—")}</td>
-                <td>${shareCell(user.shared_id)}</td>
-                <td><strong>${Number(user.visitor_count || 0)}</strong></td>
-                <td><button class="view-btn" data-view-user="${escapeHTML(user.id)}">◉ View</button></td>
-            </tr>
-        `).join("") : emptyRow(7, "No matching users found.");
+                $("usersTableBody").innerHTML = users.length
+                    ? users.map(user => `
+                <tr>
+                    <td>${escapeHTML(user.id)}</td>
+                    <td><strong>${escapeHTML(user.username)}</strong></td>
+                    <td>
+                        <span class="badge ${user.user_type === "admin" ? "green" : ""}">
+                            ${escapeHTML(user.user_type || "user")}
+                        </span>
+                    </td>
+                    <td>${escapeHTML(user.shared_id || "—")}</td>
+                    <td>${shareCell(user.shared_id)}</td>
+                    <td><strong>${Number(user.visitor_count || 0)}</strong></td>
+                    <td>
+                        <button class="view-btn" data-view-user="${escapeHTML(user.id)}">
+                            ◉ View
+                        </button>
+                    </td>
+                </tr>
+            `).join("")
+                    : emptyRow(7, "No matching users found.");
 
-                $("usersCount").textContent = `Showing ${users.length} of ${state.users.length} users`;
+                $("usersCount").textContent =
+                    `Showing ${users.length} of ${state.users.length} users`;
             }
 
             function renderVisitors(tbodyId, countId, visitors, query = "", includeReferrer = true) {
                 const filtered = visitors.filter(visitor =>
                     `${visitor.ip_address || ""} ${visitor.page_path || ""} ${visitor.device_type || ""} ` +
                     `${visitor.browser || ""} ${visitor.operating_system || ""} ${visitor.referrer_username || ""}`
-                        .toLowerCase().includes(query.toLowerCase()));
+                        .toLowerCase().includes(query.toLowerCase())
+                );
 
                 const columns = includeReferrer ? 8 : 7;
+
                 $(tbodyId).innerHTML = filtered.length
-                    ? filtered.map((v, i) => visitorRow(v, i, includeReferrer)).join("")
+                    ? filtered.map((visitor, index) =>
+                        visitorRow(visitor, index, includeReferrer)
+                    ).join("")
                     : emptyRow(columns, "No visitor records found.");
 
                 $(countId).textContent = `Showing ${filtered.length} records`;
@@ -459,8 +805,13 @@
 
             async function loadDashboard() {
                 clearMessage();
+
                 try {
-                    const data = await apiRequest(API.dashboard, { method: "POST", body: "{}" });
+                    const data = await apiRequest(API.dashboard, {
+                        method: "POST",
+                        body: "{}"
+                    });
+
                     const users = data.users || [];
                     const visitors = data.recent_visitors || [];
 
@@ -468,7 +819,8 @@
                     state.dashboardVisitors = visitors;
 
                     $("totalUsers").textContent = data.total_users ?? users.length;
-                    $("totalLinks").textContent = data.total_share_links ?? users.filter(u => u.shared_id).length;
+                    $("totalLinks").textContent =
+                        data.total_share_links ?? users.filter(user => user.shared_id).length;
                     $("totalVisitors").textContent = data.total_visitors ?? "—";
 
                     if (data.username) {
@@ -482,15 +834,23 @@
                 } catch (error) {
                     setConnection(false, "Connection failed");
                     showMessage(error.message);
-                    $("dashboardUsersBody").innerHTML = emptyRow(6, "Could not load dashboard data.");
-                    $("recentVisitorsBody").innerHTML = emptyRow(8, "Could not load visitor data.");
+
+                    $("dashboardUsersBody").innerHTML =
+                        emptyRow(6, "Could not load dashboard data.");
+                    $("recentVisitorsBody").innerHTML =
+                        emptyRow(8, "Could not load visitor data.");
                 }
             }
 
             async function loadUsers() {
                 clearMessage();
+
                 try {
-                    const data = await apiRequest(API.users, { method: "POST", body: "{}" });
+                    const data = await apiRequest(API.users, {
+                        method: "POST",
+                        body: "{}"
+                    });
+
                     state.users = data.users || [];
                     renderUsers();
                     setConnection(true, "Connected to server");
@@ -503,12 +863,27 @@
 
             async function loadVisitors() {
                 clearMessage();
+
                 try {
-                    const data = await apiRequest(API.visitors, { method: "POST", body: "{}" });
+                    const data = await apiRequest(API.visitors, {
+                        method: "POST",
+                        body: "{}"
+                    });
+
                     state.visitors = data.logs || data.visitors || [];
-                    if (data.username) $("adminName").textContent = data.username;
-                    renderVisitors("visitorsTableBody", "visitorsCount", state.visitors,
-                        $("visitorSearch").value, true);
+
+                    if (data.username) {
+                        $("adminName").textContent = data.username;
+                    }
+
+                    renderVisitors(
+                        "visitorsTableBody",
+                        "visitorsCount",
+                        state.visitors,
+                        $("visitorSearch").value,
+                        true
+                    );
+
                     setConnection(true, "Connected to server");
                 } catch (error) {
                     setConnection(false, "Connection failed");
@@ -519,130 +894,534 @@
 
             async function loadUserVisitors(userId) {
                 clearMessage();
-                const user = state.users.find(item => String(item.id) === String(userId));
+
+                const user = state.users.find(
+                    item => String(item.id) === String(userId)
+                );
+
                 if (!user) return;
 
                 state.selectedUser = user;
+
                 $("selectedUserTitle").textContent = `Visitors — ${user.username}`;
                 $("userVisitorsPanel").classList.remove("hidden");
-                $("userVisitorsBody").innerHTML = emptyRow(7, "Loading visitor records...");
+                $("userVisitorsBody").innerHTML =
+                    emptyRow(7, "Loading visitor records...");
 
                 try {
                     const data = await apiRequest(API.userVisitors(userId), {
-                        method: "POST", body: "{}"
+                        method: "POST",
+                        body: "{}"
                     });
+
                     const visitors = data.visitors || data.logs || [];
-                    renderVisitors("userVisitorsBody", "userVisitorsCount", visitors, "", false);
-                    $("userVisitorsPanel").scrollIntoView({ behavior: "smooth", block: "start" });
+
+                    renderVisitors(
+                        "userVisitorsBody",
+                        "userVisitorsCount",
+                        visitors,
+                        "",
+                        false
+                    );
+
+                    $("userVisitorsPanel").scrollIntoView({
+                        behavior: "smooth",
+                        block: "start"
+                    });
+
                     setConnection(true, "Connected to server");
                 } catch (error) {
                     showMessage(error.message);
-                    $("userVisitorsBody").innerHTML = emptyRow(7, "Could not load this user's visitors.");
+                    $("userVisitorsBody").innerHTML =
+                        emptyRow(7, "Could not load this user's visitors.");
                 }
             }
 
-            function setView(view) {
-                state.view = view;
-                const views = {
-                    dashboard: ["dashboardView", "Dashboard", "Overview of users, referrals and visitor activity."],
-                    users: ["usersView", "Users", "Manage registered users and inspect their referral traffic."],
-                    visitors: ["visitorsView", "Visitors", "Review all tracked visitor records."]
+            // -----------------------------------------------
+            // FESTIVAL MANAGEMENT
+            // -----------------------------------------------
+
+            const festivalFieldMap = {
+                festival_name: "festivalName",
+                title: "festivalTitle",
+                subtitle: "festivalSubtitle",
+                eyebrow: "festivalEyebrow",
+                message: "festivalMessage",
+                image_path: "festivalImage",
+                download_text: "festivalDownloadText",
+                download_button_text: "festivalDownloadButton",
+                surprise_button_text: "festivalSurpriseButton",
+                footer_text: "festivalFooter",
+                background_color: "festivalBackground",
+                card_color: "festivalCardColor",
+                text_color: "festivalTextColor",
+                theme_color: "festivalThemeColor"
+            };
+
+            function resetFestivalForm(clearId = true) {
+                $("festivalForm").reset();
+
+                if (clearId) {
+                    $("festivalId").value = "";
+                }
+
+                $("festivalBackground").value = "#fff4f7";
+                $("festivalCardColor").value = "#ffffff";
+                $("festivalTextColor").value = "#333333";
+                $("festivalThemeColor").value = "#b83280";
+                $("festivalActive").checked = true;
+                $("festivalWishes").value = "";
+            }
+
+            function parseWishes(value) {
+                if (Array.isArray(value)) return value;
+
+                if (typeof value !== "string" || !value.trim()) {
+                    return [];
+                }
+
+                try {
+                    const parsed = JSON.parse(value);
+
+                    if (Array.isArray(parsed)) {
+                        return parsed;
+                    }
+                } catch (_) {
+                    // Purana plain-text data ho to neeche lines mein split hoga.
+                }
+
+                return value
+                    .split(/\r?\n/)
+                    .map(item => item.trim())
+                    .filter(Boolean);
+            }
+
+            function openFestivalForm(festival = null) {
+                resetFestivalForm();
+
+                $("festivalFormTitle").textContent =
+                    festival ? "Edit Festival" : "Create Festival";
+
+                if (festival) {
+                    $("festivalId").value = festival.id ?? "";
+
+                    Object.entries(festivalFieldMap).forEach(([key, id]) => {
+                        if (festival[key] != null) {
+                            $(id).value = festival[key];
+                        }
+                    });
+
+                    $("festivalWishes").value =
+                        parseWishes(festival.wishes).join("\n");
+
+                    $("festivalActive").checked =
+                        Number(festival.is_active ?? 1) === 1 ||
+                        festival.is_active === true;
+                }
+
+                $("festivalFormPanel").classList.remove("hidden");
+
+                $("festivalFormPanel").scrollIntoView({
+                    behavior: "smooth",
+                    block: "start"
+                });
+            }
+
+            function closeFestivalForm() {
+                $("festivalFormPanel").classList.add("hidden");
+                resetFestivalForm();
+            }
+
+            async function loadFestivals() {
+                clearMessage();
+
+                $("festivalsTableBody").innerHTML =
+                    emptyRow(7, "Loading festivals...");
+
+                try {
+                    const data = await apiRequest(API.festivals, {
+                        method: "POST",
+                        body: JSON.stringify({ action: "list" })
+                    });
+
+                    state.festivals = Array.isArray(data.festivals)
+                        ? data.festivals
+                        : [];
+
+                    renderFestivals();
+                    setConnection(true, "Connected to server");
+                } catch (error) {
+                    setConnection(false, "Connection failed");
+                    showMessage(error.message);
+
+                    $("festivalsTableBody").innerHTML =
+                        emptyRow(7, "Could not load festivals. Check /admin/festivals backend route.");
+                }
+            }
+
+            function renderFestivals() {
+                const query = $("festivalSearch").value.trim().toLowerCase();
+
+                const items = state.festivals.filter(item =>
+                    `${item.festival_name || ""} ${item.title || ""} ${item.subtitle || ""}`
+                        .toLowerCase().includes(query)
+                );
+
+                $("festivalsTableBody").innerHTML = items.length
+                    ? items.map(item => {
+                        const active =
+                            Number(item.is_active ?? 1) === 1 ||
+                            item.is_active === true;
+
+                        const color = /^#[0-9a-f]{6}$/i.test(item.theme_color || "")
+                            ? item.theme_color
+                            : "#b83280";
+
+                        return `
+                    <tr>
+                        <td>${escapeHTML(item.id)}</td>
+                        <td><strong>${escapeHTML(item.festival_name || "—")}</strong></td>
+                        <td>${escapeHTML(item.title || "—")}</td>
+                        <td>
+                            <span style="
+                                display:inline-block;
+                                width:14px;
+                                height:14px;
+                                border-radius:50%;
+                                background:${color};
+                                vertical-align:middle;
+                                margin-right:6px"></span>
+                            ${escapeHTML(color)}
+                        </td>
+                        <td>
+                            <span class="badge ${active ? "green" : "gray"}">
+                                ${active ? "Active" : "Inactive"}
+                            </span>
+                        </td>
+                        <td>${formatDate(item.created_at)}</td>
+                        <td>
+                            <div class="festival-actions">
+                                <button class="btn"
+                                    data-festival-edit="${escapeHTML(item.id)}">
+                                    Edit
+                                </button>
+
+                                <button class="btn"
+                                    data-festival-toggle="${escapeHTML(item.id)}"
+                                    data-active="${active ? "1" : "0"}">
+                                    ${active ? "Deactivate" : "Activate"}
+                                </button>
+
+                                <button class="btn"
+                                    data-festival-delete="${escapeHTML(item.id)}">
+                                    Delete
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                    }).join("")
+                    : emptyRow(7, "No festivals found. Click + New Festival to create one.");
+
+                $("festivalsCount").textContent =
+                    `Showing ${items.length} of ${state.festivals.length} festivals`;
+            }
+
+            async function saveFestival(event) {
+                event.preventDefault();
+
+                const id = $("festivalId").value.trim();
+
+                const payload = {
+                    action: id ? "update" : "create",
+                    festival_name: $("festivalName").value.trim(),
+                    title: $("festivalTitle").value.trim(),
+                    subtitle: $("festivalSubtitle").value.trim(),
+                    eyebrow: $("festivalEyebrow").value.trim(),
+                    message: $("festivalMessage").value.trim(),
+                    image_path: $("festivalImage").value.trim(),
+                    download_text: $("festivalDownloadText").value.trim(),
+                    download_button_text: $("festivalDownloadButton").value.trim(),
+                    surprise_button_text: $("festivalSurpriseButton").value.trim(),
+                    footer_text: $("festivalFooter").value.trim(),
+                    wishes: $("festivalWishes").value
+                        .split(/\r?\n/)
+                        .map(item => item.trim())
+                        .filter(Boolean),
+                    background_color: $("festivalBackground").value,
+                    card_color: $("festivalCardColor").value,
+                    text_color: $("festivalTextColor").value,
+                    theme_color: $("festivalThemeColor").value,
+                    is_active: $("festivalActive").checked ? 1 : 0
                 };
 
-                Object.values(views).forEach(item => $(item[0]).classList.add("hidden"));
+                if (!payload.festival_name || !payload.title) {
+                    showMessage("Festival Name aur Page Title required hain.");
+                    return;
+                }
+
+                if (id) {
+                    payload.id = Number(id);
+                }
+
+                const button = $("saveFestivalBtn");
+                button.disabled = true;
+                button.textContent = "Saving...";
+
+                try {
+                    const data = await apiRequest(API.festivals, {
+                        method: "POST",
+                        body: JSON.stringify(payload)
+                    });
+
+                    showMessage(
+                        data.message ||
+                        (id ? "Festival updated successfully." : "Festival created successfully.")
+                    );
+
+                    closeFestivalForm();
+                    await loadFestivals();
+                } catch (error) {
+                    showMessage(error.message);
+                } finally {
+                    button.disabled = false;
+                    button.textContent = "Save Festival";
+                }
+            }
+
+            // Festival edit, activate/deactivate and delete buttons
+            document.addEventListener("click", async event => {
+                const edit = event.target.closest("[data-festival-edit]");
+                const toggle = event.target.closest("[data-festival-toggle]");
+                const remove = event.target.closest("[data-festival-delete]");
+
+                try {
+                    if (edit) {
+                        const item = state.festivals.find(
+                            festival => String(festival.id) === edit.dataset.festivalEdit
+                        );
+
+                        if (item) {
+                            openFestivalForm(item);
+                        }
+                    } else if (toggle) {
+                        const id = toggle.dataset.festivalToggle;
+                        const active = toggle.dataset.active !== "1";
+
+                        await apiRequest(API.festivalItem(id), {
+                            method: "POST",
+                            body: JSON.stringify({
+                                action: "toggle",
+                                is_active: active ? 1 : 0
+                            })
+                        });
+
+                        showMessage(
+                            active ? "Festival activated." : "Festival deactivated."
+                        );
+
+                        await loadFestivals();
+                    } else if (remove) {
+                        const id = remove.dataset.festivalDelete;
+
+                        if (!confirm("Is festival ko delete karna hai? Ye action undo nahi hoga.")) {
+                            return;
+                        }
+
+                        await apiRequest(API.festivalItem(id), {
+                            method: "POST",
+                            body: JSON.stringify({ action: "delete" })
+                        });
+
+                        showMessage("Festival deleted successfully.");
+                        await loadFestivals();
+                    }
+                } catch (error) {
+                    showMessage(error.message);
+                }
+            });
+
+            // -----------------------------------------------
+            // PAGE NAVIGATION
+            // -----------------------------------------------
+
+            function setView(view) {
+                const views = {
+                    dashboard: [
+                        "dashboardView",
+                        "Dashboard",
+                        "Overview of users, referrals and visitor activity."
+                    ],
+                    users: [
+                        "usersView",
+                        "Users",
+                        "Manage registered users and inspect their referral traffic."
+                    ],
+                    visitors: [
+                        "visitorsView",
+                        "Visitors",
+                        "Review all tracked visitor records."
+                    ],
+                    festivals: [
+                        "festivalsView",
+                        "Festivals",
+                        "Create and manage festival greeting templates."
+                    ]
+                };
+
+                if (!views[view]) {
+                    view = "dashboard";
+                }
+
+                state.view = view;
+
+                Object.values(views).forEach(item => {
+                    $(item[0]).classList.add("hidden");
+                });
+
                 $(views[view][0]).classList.remove("hidden");
+
                 $("pageTitle").textContent = views[view][1];
                 $("pageSubtitle").textContent = views[view][2];
 
-                document.querySelectorAll(".nav-link").forEach(link =>
-                    link.classList.toggle("active", link.dataset.view === view)
-                );
+                document.querySelectorAll(".nav-link").forEach(link => {
+                    link.classList.toggle("active", link.dataset.view === view);
+                });
 
                 if (view === "dashboard") loadDashboard();
                 if (view === "users") loadUsers();
                 if (view === "visitors") loadVisitors();
+                if (view === "festivals") loadFestivals();
             }
 
             document.querySelectorAll(".nav-link").forEach(link => {
                 link.addEventListener("click", event => {
                     event.preventDefault();
+
                     history.replaceState(null, "", `#${link.dataset.view}`);
                     setView(link.dataset.view);
                 });
             });
 
+            // Refresh buttons
             $("refreshDashboard").addEventListener("click", loadDashboard);
             $("refreshUsers").addEventListener("click", loadUsers);
             $("refreshVisitors").addEventListener("click", loadVisitors);
+            $("refreshFestivals").addEventListener("click", loadFestivals);
+
+            // Festival form controls
+            $("newFestivalBtn").addEventListener("click", () => openFestivalForm());
+            $("cancelFestivalBtn").addEventListener("click", closeFestivalForm);
+            $("resetFestivalBtn").addEventListener("click", () => resetFestivalForm(true));
+            $("festivalSearch").addEventListener("input", renderFestivals);
+            $("festivalForm").addEventListener("submit", saveFestival);
+
             $("viewAllVisitors").addEventListener("click", () => setView("visitors"));
 
-            $("userSearch").addEventListener("input", () => renderDashboardUsers(state.users));
+            // Search controls
+            $("userSearch").addEventListener("input", () => {
+                renderDashboardUsers(state.users);
+            });
+
             $("usersSearch").addEventListener("input", renderUsers);
-            $("visitorSearch").addEventListener("input", () =>
-                renderVisitors("visitorsTableBody", "visitorsCount", state.visitors,
-                    $("visitorSearch").value, true)
-            );
 
-            $("backToUsers").addEventListener("click", () =>
-                $("userVisitorsPanel").classList.add("hidden")
-            );
+            $("visitorSearch").addEventListener("input", () => {
+                renderVisitors(
+                    "visitorsTableBody",
+                    "visitorsCount",
+                    state.visitors,
+                    $("visitorSearch").value,
+                    true
+                );
+            });
 
+            $("backToUsers").addEventListener("click", () => {
+                $("userVisitorsPanel").classList.add("hidden");
+            });
+
+            // User visitor buttons and copy-link buttons
             document.addEventListener("click", event => {
                 const viewButton = event.target.closest("[data-view-user]");
+
                 if (viewButton) {
                     const id = viewButton.dataset.viewUser;
+
                     if (state.view === "dashboard") {
                         setView("users");
-                        loadUsers().then(() => loadUserVisitors(id));
+
+                        loadUsers().then(() => {
+                            loadUserVisitors(id);
+                        });
                     } else {
                         loadUserVisitors(id);
                     }
+
                     return;
                 }
 
                 const copyButton = event.target.closest("[data-copy]");
+
                 if (copyButton) {
                     const value = copyButton.dataset.copy;
+
                     if (navigator.clipboard && window.isSecureContext) {
                         navigator.clipboard.writeText(value)
-                            .then(() => { copyButton.textContent = "✓ Copied"; })
-                            .catch(() => showMessage("Link copy nahi hua. Link ko manually copy karein."));
+                            .then(() => {
+                                copyButton.textContent = "✓ Copied";
+                            })
+                            .catch(() => {
+                                showMessage("Link copy nahi hua. Link ko manually copy karein.");
+                            });
                     } else {
                         const field = document.createElement("textarea");
                         field.value = value;
                         field.style.position = "fixed";
                         field.style.opacity = "0";
+
                         document.body.appendChild(field);
                         field.select();
+
                         try {
                             document.execCommand("copy");
                             copyButton.textContent = "✓ Copied";
                         } catch {
                             showMessage("Link copy nahi hua. Link ko manually copy karein.");
                         }
+
                         field.remove();
                     }
-                    setTimeout(() => { copyButton.textContent = "▢"; }, 1800);
+
+                    setTimeout(() => {
+                        copyButton.textContent = "▢";
+                    }, 1800);
                 }
             });
 
+            // Logout
             $("logoutBtn").addEventListener("click", () => {
                 localStorage.removeItem("token");
                 window.location.href = "/login";
             });
 
-            // Load the initial view without a full page refresh.
-            const initialView = ["dashboard", "users", "visitors"].includes(location.hash.slice(1))
-                ? location.hash.slice(1) : "dashboard";
+            // Initial view
+            const allowedViews = ["dashboard", "users", "visitors", "festivals"];
+
+            const initialView = allowedViews.includes(location.hash.slice(1))
+                ? location.hash.slice(1)
+                : "dashboard";
+
             setView(initialView);
 
-            // Auto-refresh current view every 20 seconds.
+            // AJAX auto-refresh every 20 seconds
             setInterval(() => {
                 if (document.hidden) return;
+
                 if (state.view === "dashboard") loadDashboard();
                 if (state.view === "users") loadUsers();
                 if (state.view === "visitors") loadVisitors();
+                if (state.view === "festivals") loadFestivals();
             }, 20000);
+
         })();
     </script>
 </body>

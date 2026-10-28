@@ -1,7 +1,9 @@
 
+import json
 from contextlib import closing
 
-from flask import Blueprint, render_template, request, jsonify
+from flask import Blueprint, render_template, request, jsonify, abort
+
 from database import get_db
 from utils.validator import validate_token
 from config import USER_TYPE
@@ -10,9 +12,9 @@ from config import USER_TYPE
 user_bp = Blueprint("user_dashboard", __name__)
 
 
-# ---------------------------------------------------------
+# ============================================================
 # AUTHENTICATE NORMAL USER
-# ---------------------------------------------------------
+# ============================================================
 
 def get_current_user():
     data = request.get_json(silent=True) or {}
@@ -21,7 +23,7 @@ def get_current_user():
     if not token:
         return None, (jsonify({
             "status": "error",
-            "message": "Login required"
+            "message": "Login required."
         }), 401)
 
     try:
@@ -32,18 +34,15 @@ def get_current_user():
     if not isinstance(token_data, dict):
         return None, (jsonify({
             "status": "error",
-            "message": "Invalid or expired token"
+            "message": "Invalid or expired token."
         }), 401)
 
-    user_id = token_data.get(
-        "user_id",
-        token_data.get("id")
-    )
+    user_id = token_data.get("user_id", token_data.get("id"))
 
     if user_id is None:
         return None, (jsonify({
             "status": "error",
-            "message": "User ID missing from token"
+            "message": "User ID missing from token."
         }), 401)
 
     with closing(get_db()) as conn:
@@ -56,30 +55,29 @@ def get_current_user():
     if row is None:
         return None, (jsonify({
             "status": "error",
-            "message": "User not found"
+            "message": "User not found."
         }), 401)
 
     user = dict(row)
 
-    # USER_TYPE config mein admin role hona chahiye.
     if user["user_type"] == USER_TYPE:
         return None, (jsonify({
             "status": "error",
-            "message": "Normal user account required"
+            "message": "Normal user account required."
         }), 403)
 
     if not user.get("shared_id"):
         return None, (jsonify({
             "status": "error",
-            "message": "Share link is not configured for this account"
+            "message": "Share ID is not configured."
         }), 409)
 
     return user, None
 
 
-# ---------------------------------------------------------
-# FETCH VISITORS FOR THE LOGGED-IN USER ONLY
-# ---------------------------------------------------------
+# ============================================================
+# FETCH VISITORS FOR CURRENT USER
+# ============================================================
 
 def fetch_visitors(shared_id, limit=None, search=""):
     sql = """
@@ -94,7 +92,8 @@ def fetch_visitors(shared_id, limit=None, search=""):
             operating_system,
             latitude,
             longitude,
-            accuracy
+            accuracy,
+            share_id
         FROM visitor_logs
         WHERE share_id = ?
     """
@@ -126,18 +125,19 @@ def fetch_visitors(shared_id, limit=None, search=""):
     return [dict(row) for row in rows]
 
 
-# ---------------------------------------------------------
-# PAGE
-# ---------------------------------------------------------
+# ============================================================
+# DASHBOARD PAGE
+# ============================================================
 
 @user_bp.route("/dashboard", methods=["GET"])
 def user_dashboard_page():
     return render_template("user_dashboard.html")
 
 
-# ---------------------------------------------------------
-# PROFILE API
-# ---------------------------------------------------------
+# ============================================================
+# USER PROFILE API
+# POST /user/profile
+# ============================================================
 
 @user_bp.route("/user/profile", methods=["POST"])
 def user_profile():
@@ -152,19 +152,15 @@ def user_profile():
             "id": user["id"],
             "username": user["username"],
             "user_type": user["user_type"],
-            "shared_id": user["shared_id"],
-            "share_url": (
-                request.url_root.rstrip("/")
-                + "/share/"
-                + user["shared_id"]
-            )
+            "shared_id": user["shared_id"]
         }
     }), 200
 
 
-# ---------------------------------------------------------
-# DASHBOARD API
-# ---------------------------------------------------------
+# ============================================================
+# USER DASHBOARD API
+# POST /user/dashboard
+# ============================================================
 
 @user_bp.route("/user/dashboard", methods=["POST"])
 def user_dashboard_data():
@@ -188,20 +184,48 @@ def user_dashboard_data():
     return jsonify({
         "status": "success",
         "username": user["username"],
+        "user_type": user["user_type"],
         "share_id": user["shared_id"],
-        "share_url": (
-            request.url_root.rstrip("/")
-            + "/share/"
-            + user["shared_id"]
-        ),
         "total_visitors": total,
         "recent_visitors": recent
     }), 200
 
 
-# ---------------------------------------------------------
-# ALL VISITORS API
-# ---------------------------------------------------------
+# ============================================================
+# ACTIVE FESTIVALS API
+# POST /user/festivals
+# ============================================================
+
+@user_bp.route("/user/festivals", methods=["POST"])
+def user_festivals():
+    user, error = get_current_user()
+
+    if error:
+        return error
+
+    with closing(get_db()) as conn:
+        rows = conn.execute("""
+            SELECT
+                id,
+                festival_name,
+                title,
+                subtitle,
+                eyebrow
+            FROM uidata
+            WHERE is_active = 1
+            ORDER BY festival_name COLLATE NOCASE ASC
+        """).fetchall()
+
+    return jsonify({
+        "status": "success",
+        "festivals": [dict(row) for row in rows]
+    }), 200
+
+
+# ============================================================
+# USER VISITORS API
+# POST /user/visitors
+# ============================================================
 
 @user_bp.route("/user/visitors", methods=["POST"])
 def user_visitors_data():
@@ -216,14 +240,12 @@ def user_visitors_data():
     if not isinstance(search, str):
         return jsonify({
             "status": "error",
-            "message": "Invalid search value"
+            "message": "Invalid search value."
         }), 400
-
-    search = search.strip()[:100]
 
     visitors = fetch_visitors(
         shared_id=user["shared_id"],
-        search=search
+        search=search.strip()[:100]
     )
 
     return jsonify({
@@ -231,3 +253,4 @@ def user_visitors_data():
         "total_visitors": len(visitors),
         "visitors": visitors
     }), 200
+

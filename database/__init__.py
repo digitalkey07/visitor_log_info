@@ -53,9 +53,42 @@ def create_table():
                 username TEXT UNIQUE NOT NULL,
                 password TEXT NOT NULL,
                 user_type TEXT NOT NULL DEFAULT 'user',
-                "shared_id" TEXT NOT NULL UNIQUE
+                shared_id TEXT NOT NULL UNIQUE
             )
-        """)    
+        """)   
+        
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS uidata (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+                festival_name TEXT NOT NULL,
+                title TEXT NOT NULL,
+                subtitle TEXT,
+
+                eyebrow TEXT,
+                message TEXT,
+                image_path TEXT,
+
+                download_text TEXT,
+                download_button_text TEXT,
+
+                surprise_button_text TEXT,
+                wishes TEXT,
+
+                footer_text TEXT,
+
+                background_color TEXT DEFAULT '#fff4f7',
+                card_color TEXT DEFAULT '#ffffff',
+                text_color TEXT DEFAULT '#333333',
+                theme_color TEXT DEFAULT '#b83280',
+
+                is_active INTEGER NOT NULL DEFAULT 1,
+
+                created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+
 
 #======================================
 #DATABASE MIGRATION FUNCTION

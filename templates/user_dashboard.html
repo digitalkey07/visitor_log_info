@@ -5,27 +5,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>My Dashboard | Visitor Tracking</title>
-
-    <link rel="stylesheet" href="{{url_for('static',filename='css/user_dashboard.css')}}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/user_dashboard.css') }}">
 </head>
 
 <body>
     <div class="layout">
-
         <aside class="sidebar">
             <div class="brand">Visitor<span>Track</span></div>
-
             <div class="nav-label">Workspace</div>
+
             <nav class="nav-menu">
-                <button class="nav-btn active" data-view="dashboard">
-                    ▦ &nbsp; Dashboard
-                </button>
-                <button class="nav-btn" data-view="visitors">
-                    ◉ &nbsp; My Visitors
-                </button>
-                <button class="nav-btn" data-view="profile">
-                    ◉ &nbsp; My Profile
-                </button>
+                <button class="nav-btn active" data-view="dashboard">▦ &nbsp; Dashboard</button>
+                <button class="nav-btn" data-view="visitors">◉ &nbsp; My Visitors</button>
+                <button class="nav-btn" data-view="profile">◉ &nbsp; My Profile</button>
             </nav>
 
             <div class="sidebar-bottom">
@@ -42,15 +34,11 @@
             </header>
 
             <div class="content">
-
                 <!-- DASHBOARD -->
                 <section class="view active" id="dashboardView">
                     <div class="welcome">
                         <h2>Welcome, <span id="welcomeName">User</span>!</h2>
-                        <p class="muted">
-                            Share your unique link and view the visits recorded
-                            through it.
-                        </p>
+                        <p class="muted">Choose a greeting design and share your personal link.</p>
                     </div>
 
                     <div class="stats">
@@ -58,37 +46,41 @@
                             <div class="stat-title">Total Visitors</div>
                             <div class="stat-number" id="totalVisitors">—</div>
                         </div>
-
                         <div class="card">
-                            <div class="stat-title">Your Account</div>
-                            <div class="stat-number" style="font-size:23px" id="accountType">—</div>
+                            <div class="stat-title">Account Type</div>
+                            <div class="stat-number" id="accountType">—</div>
                         </div>
-
                         <div class="card">
                             <div class="stat-title">Your Share ID</div>
-                            <div class="stat-number" style="font-size:20px" id="shareIdStat">—</div>
+                            <div class="stat-number" id="shareIdStat">—</div>
                         </div>
                     </div>
 
                     <div class="card share-card">
-                        <h2 class="card-heading">Your Share Link</h2>
-                        <p class="muted">
-                            Copy this link and share it with people. Visits
-                            through the link will appear in your visitor list.
-                        </p>
+                        <h2 class="card-heading">Create Your Share Link</h2>
+                        <p class="muted">Select a festival design before sharing your link.</p>
 
+                        <label for="festivalSelect">Choose Festival / UI</label>
+                        <select class="field" id="festivalSelect">
+                            <option value="">Loading festivals...</option>
+                        </select>
+
+                        <p class="muted" id="festivalDescription" aria-live="polite"></p>
+
+                        <label for="shareUrl" style="display:block;margin-top:18px">
+                            Your Share Link
+                        </label>
                         <div class="share-row">
-                            <div class="share-url" id="shareUrl">Loading link…</div>
-                            <button class="btn" id="copyLinkBtn">Copy Link</button>
+                            <input class="field share-url" id="shareUrl" readonly
+                                placeholder="Select a festival to generate your link">
+                            <button class="btn" id="copyLinkBtn" type="button">Copy Link</button>
                         </div>
                         <p class="status" id="copyStatus" aria-live="polite"></p>
                     </div>
 
                     <div class="section-head">
                         <h2>Recent Visitors</h2>
-                        <button class="btn secondary" id="viewAllBtn">
-                            View All
-                        </button>
+                        <button class="btn secondary" id="viewAllBtn">View All</button>
                     </div>
 
                     <div class="table-card">
@@ -105,7 +97,7 @@
                                 </thead>
                                 <tbody id="recentTable">
                                     <tr>
-                                        <td colspan="5" class="empty">Loading visitors…</td>
+                                        <td colspan="5" class="empty">Loading visitors...</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -118,20 +110,16 @@
                     <div class="section-head">
                         <div>
                             <h2>My Visitors</h2>
-                            <p class="muted">Visitors attributed to your share link.</p>
+                            <p class="muted">Visitors attributed to your share ID.</p>
                         </div>
-                        <button class="btn secondary" id="refreshVisitorsBtn">
-                            Refresh
-                        </button>
+                        <button class="btn secondary" id="refreshVisitorsBtn">Refresh</button>
                     </div>
 
                     <div class="table-card">
                         <div class="table-tools">
-                            <input class="field" id="visitorSearch" placeholder="Search IP, page, browser or OS…"
+                            <input class="field" id="visitorSearch" placeholder="Search IP, page, browser or OS..."
                                 aria-label="Search visitors">
-                            <span class="status" id="visitorCount" style="align-self:center;white-space:nowrap">
-                                Loading…
-                            </span>
+                            <span class="status" id="visitorCount">Loading...</span>
                         </div>
 
                         <div class="table-wrap">
@@ -152,9 +140,7 @@
                                 </thead>
                                 <tbody id="visitorsTable">
                                     <tr>
-                                        <td colspan="10" class="empty">
-                                            Loading visitors…
-                                        </td>
+                                        <td colspan="10" class="empty">Loading visitors...</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -162,8 +148,8 @@
                     </div>
 
                     <p class="muted" style="margin-top:12px">
-                        MAC address may not be available from a normal website.
-                        Location is shown only if the visitor's browser supplied it.
+                        Websites normally cannot read a visitor's MAC address.
+                        Location appears only when available from the browser.
                     </p>
                 </section>
 
@@ -171,9 +157,7 @@
                 <section class="view" id="profileView">
                     <div class="welcome">
                         <h2>My Profile</h2>
-                        <p class="muted">
-                            These details are loaded from your registered account.
-                        </p>
+                        <p class="muted">Your registered account details.</p>
                     </div>
 
                     <div class="card">
@@ -182,33 +166,26 @@
                                 <label>User ID</label>
                                 <input class="field" id="profileId" readonly>
                             </div>
-
                             <div class="profile-item">
                                 <label>Username</label>
                                 <input class="field" id="profileUsername" readonly>
                             </div>
-
                             <div class="profile-item">
                                 <label>Account Type</label>
                                 <input class="field" id="profileType" readonly>
                             </div>
-
                             <div class="profile-item">
                                 <label>Share ID</label>
                                 <input class="field" id="profileShareId" readonly>
                             </div>
-
                             <div class="profile-item" style="grid-column:1/-1">
-                                <label>Share Link</label>
+                                <label>Selected Festival Link</label>
                                 <input class="field" id="profileShareUrl" readonly>
                             </div>
                         </div>
-
-                        <div class="notice">
-                            Profile information is read from the current database
-                            schema. Name, email and mobile fields can be added if
-                            they are collected during registration.
-                        </div>
+                        <p class="muted">
+                            The selected festival link is also available on your Dashboard.
+                        </p>
                     </div>
                 </section>
 
@@ -218,19 +195,23 @@
     </div>
 
     <script>
+        "use strict";
+
         const API = {
             dashboard: "/user/dashboard",
             profile: "/user/profile",
-            visitors: "/user/visitors"
+            visitors: "/user/visitors",
+            festivals: "/user/festivals"
         };
 
         const token = localStorage.getItem("token");
+        const $ = id => document.getElementById(id);
 
         let currentShareUrl = "";
-        let visitorRefreshTimer = null;
+        let selectedFestivalId = "";
+        let currentShareId = "";
         let searchTimer = null;
-
-        const $ = (id) => document.getElementById(id);
+        let refreshTimer = null;
 
         function escapeHTML(value) {
             return String(value ?? "").replace(/[&<>"']/g, char => ({
@@ -244,43 +225,32 @@
 
         function formatDate(value) {
             if (!value) return "—";
-
             const date = new Date(value);
-
-            if (Number.isNaN(date.getTime())) {
-                return String(value);
-            }
-
-            return date.toLocaleString();
+            return Number.isNaN(date.getTime()) ? String(value) : date.toLocaleString();
         }
 
         async function apiPost(url, extra = {}) {
             if (!token) {
-                throw new Error("Login token missing. Please login again.");
+                window.location.href = "/login";
+                throw new Error("Login required.");
             }
 
             const response = await fetch(url, {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    token: token,
-                    ...extra
-                })
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ token, ...extra })
             });
 
             const data = await response.json().catch(() => ({}));
 
             if (response.status === 401) {
                 localStorage.removeItem("token");
+                window.location.href = "/login";
                 throw new Error("Session expired. Please login again.");
             }
 
             if (!response.ok || data.status !== "success") {
-                throw new Error(
-                    data.message || "Request failed. Please try again."
-                );
+                throw new Error(data.message || data.error || "Request failed.");
             }
 
             return data;
@@ -297,15 +267,13 @@
         }
 
         function mapURL(visitor) {
+            if (visitor.latitude == null || visitor.longitude == null) return "";
+
             const lat = Number(visitor.latitude);
             const lng = Number(visitor.longitude);
 
-            if (
-                visitor.latitude === null || visitor.latitude === undefined ||
-                visitor.longitude === null || visitor.longitude === undefined ||
-                !Number.isFinite(lat) || !Number.isFinite(lng) ||
-                lat < -90 || lat > 90 || lng < -180 || lng > 180
-            ) {
+            if (!Number.isFinite(lat) || !Number.isFinite(lng) ||
+                lat < -90 || lat > 90 || lng < -180 || lng > 180) {
                 return "";
             }
 
@@ -315,28 +283,23 @@
         function renderRecent(visitors) {
             const tbody = $("recentTable");
 
-            if (!visitors || visitors.length === 0) {
-                tbody.innerHTML = `
-                <tr><td colspan="5" class="empty">
-                    No visitors recorded yet.
-                </td></tr>`;
+            if (!visitors.length) {
+                tbody.innerHTML = '<tr><td colspan="5" class="empty">No visitors recorded yet.</td></tr>';
                 return;
             }
 
             tbody.innerHTML = visitors.map(visitor => {
                 const map = mapURL(visitor);
-
                 return `
-                <tr>
-                    <td>${escapeHTML(visitor.ip_address || "—")}</td>
-                    <td>${escapeHTML(visitor.device_type || "—")}</td>
-                    <td>${escapeHTML(visitor.browser || "—")}</td>
-                    <td>${map
-                        ? `<a class="map-link" href="${map}"
-                             target="_blank" rel="noopener noreferrer">View Map</a>`
+            <tr>
+                <td>${escapeHTML(visitor.ip_address || "—")}</td>
+                <td>${escapeHTML(visitor.device_type || "—")}</td>
+                <td>${escapeHTML(visitor.browser || "—")}</td>
+                <td>${map
+                        ? `<a class="map-link" href="${map}" target="_blank" rel="noopener noreferrer">View Map</a>`
                         : "Unavailable"}</td>
-                    <td>${escapeHTML(formatDate(visitor.visited_at))}</td>
-                </tr>`;
+                <td>${escapeHTML(formatDate(visitor.visited_at))}</td>
+            </tr>`;
             }).join("");
         }
 
@@ -348,11 +311,13 @@
                 $("topUsername").textContent = data.username || "User";
                 $("totalVisitors").textContent = data.total_visitors ?? 0;
                 $("shareIdStat").textContent = data.share_id || "—";
+                $("accountType").textContent = data.user_type || "User";
 
-                currentShareUrl = data.share_url || "";
-                $("shareUrl").textContent = currentShareUrl || "Not configured";
-
+                currentShareId = data.share_id || "";
                 renderRecent(data.recent_visitors || []);
+
+                // Do not overwrite the selected festival link here.
+                updateShareLink();
             } catch (error) {
                 showError(error.message);
             }
@@ -361,33 +326,28 @@
         function renderVisitors(visitors) {
             const tbody = $("visitorsTable");
 
-            if (!visitors || visitors.length === 0) {
-                tbody.innerHTML = `
-                <tr><td colspan="10" class="empty">
-                    No visitors found.
-                </td></tr>`;
+            if (!visitors.length) {
+                tbody.innerHTML = '<tr><td colspan="10" class="empty">No visitors found.</td></tr>';
                 return;
             }
 
             tbody.innerHTML = visitors.map(visitor => {
                 const map = mapURL(visitor);
-
                 return `
-                <tr>
-                    <td>${escapeHTML(visitor.ip_address || "—")}</td>
-                    <td>${escapeHTML(visitor.mac_address || "Unavailable")}</td>
-                    <td>${escapeHTML(visitor.latitude ?? "—")}</td>
-                    <td>${escapeHTML(visitor.longitude ?? "—")}</td>
-                    <td>${map
-                        ? `<a class="map-link" href="${map}"
-                             target="_blank" rel="noopener noreferrer">Open Map</a>`
+            <tr>
+                <td>${escapeHTML(visitor.ip_address || "—")}</td>
+                <td>${escapeHTML(visitor.mac_address || "Unavailable")}</td>
+                <td>${escapeHTML(visitor.latitude ?? "—")}</td>
+                <td>${escapeHTML(visitor.longitude ?? "—")}</td>
+                <td>${map
+                        ? `<a class="map-link" href="${map}" target="_blank" rel="noopener noreferrer">Open Map</a>`
                         : "Unavailable"}</td>
-                    <td>${escapeHTML(visitor.page_path || "—")}</td>
-                    <td>${escapeHTML(visitor.device_type || "—")}</td>
-                    <td>${escapeHTML(visitor.browser || "—")}</td>
-                    <td>${escapeHTML(visitor.operating_system || "—")}</td>
-                    <td>${escapeHTML(formatDate(visitor.visited_at))}</td>
-                </tr>`;
+                <td>${escapeHTML(visitor.page_path || "—")}</td>
+                <td>${escapeHTML(visitor.device_type || "—")}</td>
+                <td>${escapeHTML(visitor.browser || "—")}</td>
+                <td>${escapeHTML(visitor.operating_system || "—")}</td>
+                <td>${escapeHTML(formatDate(visitor.visited_at))}</td>
+            </tr>`;
             }).join("");
         }
 
@@ -398,15 +358,10 @@
                 });
 
                 renderVisitors(data.visitors || []);
-                $("visitorCount").textContent =
-                    `${data.total_visitors ?? 0} result(s)`;
-
-                $("globalStatus").textContent = "";
+                $("visitorCount").textContent = `${data.total_visitors ?? 0} result(s)`;
             } catch (error) {
-                $("visitorsTable").innerHTML = `
-                <tr><td colspan="10" class="empty">
-                    ${escapeHTML(error.message)}
-                </td></tr>`;
+                $("visitorsTable").innerHTML =
+                    `<tr><td colspan="10" class="empty">${escapeHTML(error.message)}</td></tr>`;
                 showError(error.message);
             }
         }
@@ -414,86 +369,136 @@
         async function loadProfile() {
             try {
                 const data = await apiPost(API.profile);
-                const profile = data.profile;
+                const profile = data.profile || {};
 
                 $("profileId").value = profile.id ?? "";
                 $("profileUsername").value = profile.username ?? "";
                 $("profileType").value = profile.user_type ?? "";
                 $("profileShareId").value = profile.shared_id ?? "";
-                $("profileShareUrl").value = profile.share_url ?? "";
 
                 $("topUsername").textContent = profile.username || "User";
                 $("welcomeName").textContent = profile.username || "User";
-                $("accountType").textContent = profile.user_type || "User";
+
+                currentShareId = profile.shared_id || currentShareId;
+                updateShareLink();
             } catch (error) {
                 showError(error.message);
             }
         }
 
+        async function loadFestivals() {
+            const select = $("festivalSelect");
+
+            try {
+                const data = await apiPost(API.festivals);
+                const festivals = data.festivals || [];
+
+                select.innerHTML = '<option value="">-- Select a festival --</option>';
+
+                if (!festivals.length) {
+                    select.innerHTML = '<option value="">No active festivals available</option>';
+                    updateShareLink();
+                    return;
+                }
+
+                festivals.forEach(festival => {
+                    const option = document.createElement("option");
+                    option.value = String(festival.id);
+                    option.textContent = festival.festival_name;
+                    option.dataset.title = festival.title || "";
+                    option.dataset.subtitle = festival.subtitle || "";
+                    select.appendChild(option);
+                });
+
+                // Restore a selection saved for this browser, if still active.
+                const savedId = localStorage.getItem("selectedFestivalId");
+                if (savedId && festivals.some(f => String(f.id) === savedId)) {
+                    select.value = savedId;
+                } else {
+                    select.selectedIndex = 0;
+                }
+
+                updateShareLink();
+            } catch (error) {
+                select.innerHTML = '<option value="">Could not load festivals</option>';
+                showError(error.message);
+            }
+        }
+
+        function updateShareLink() {
+            const select = $("festivalSelect");
+            selectedFestivalId = select.value || "";
+
+            const option = select.selectedOptions[0];
+            $("festivalDescription").textContent = option && option.value
+                ? [option.dataset.title, option.dataset.subtitle].filter(Boolean).join(" — ")
+                : "Select an available festival to create your link.";
+
+            if (selectedFestivalId) {
+                localStorage.setItem("selectedFestivalId", selectedFestivalId);
+            }
+
+            if (currentShareId && selectedFestivalId) {
+                currentShareUrl = `${window.location.origin}/share/${encodeURIComponent(currentShareId)}/${encodeURIComponent(selectedFestivalId)}`;
+            } else {
+                currentShareUrl = "";
+            }
+
+            $("shareUrl").value = currentShareUrl;
+            $("profileShareUrl").value = currentShareUrl;
+            $("copyLinkBtn").disabled = !currentShareUrl;
+        }
+
         async function copyShareLink() {
             if (!currentShareUrl) {
-                $("copyStatus").textContent = "Share link not available.";
+                $("copyStatus").textContent = "Please select a festival first.";
                 return;
             }
 
             try {
                 await navigator.clipboard.writeText(currentShareUrl);
-                $("copyStatus").textContent = "Link copied successfully.";
+                $("copyStatus").textContent = "Share link copied successfully.";
                 $("copyStatus").className = "status success";
             } catch {
-                // Fallback for browsers where Clipboard API is unavailable.
-                const input = document.createElement("textarea");
-                input.value = currentShareUrl;
-                input.style.position = "fixed";
-                input.style.opacity = "0";
-                document.body.appendChild(input);
-                input.select();
+                $("shareUrl").focus();
+                $("shareUrl").select();
 
                 const copied = document.execCommand("copy");
-                input.remove();
-
                 $("copyStatus").textContent = copied
-                    ? "Link copied successfully."
-                    : "Copy failed. Please copy the link manually.";
-                $("copyStatus").className = copied
-                    ? "status success"
-                    : "status error";
+                    ? "Share link copied successfully."
+                    : "Copy failed. Please copy the URL manually.";
+                $("copyStatus").className = copied ? "status success" : "status error";
             }
         }
 
         function switchView(viewName) {
-            document.querySelectorAll(".view").forEach(view => {
-                view.classList.remove("active");
-            });
+            document.querySelectorAll(".view").forEach(view => view.classList.remove("active"));
 
             document.querySelectorAll(".nav-btn[data-view]").forEach(button => {
-                button.classList.toggle(
-                    "active",
-                    button.dataset.view === viewName
-                );
+                button.classList.toggle("active", button.dataset.view === viewName);
             });
 
             $(`${viewName}View`).classList.add("active");
 
-            const titles = {
+            $("pageTitle").textContent = ({
                 dashboard: "Dashboard",
                 visitors: "My Visitors",
                 profile: "My Profile"
-            };
+            })[viewName] || "Dashboard";
 
-            $("pageTitle").textContent = titles[viewName] || "Dashboard";
-
-            if (viewName === "dashboard") loadDashboard();
+            if (viewName === "dashboard") {
+                loadDashboard();
+                loadFestivals();
+            }
             if (viewName === "visitors") loadVisitors();
             if (viewName === "profile") loadProfile();
         }
 
         document.querySelectorAll(".nav-btn[data-view]").forEach(button => {
-            button.addEventListener("click", () => {
-                switchView(button.dataset.view);
-            });
+            button.addEventListener("click", () => switchView(button.dataset.view));
         });
 
+        $("festivalSelect").addEventListener("change", updateShareLink);
         $("copyLinkBtn").addEventListener("click", copyShareLink);
         $("viewAllBtn").addEventListener("click", () => switchView("visitors"));
         $("refreshVisitorsBtn").addEventListener("click", loadVisitors);
@@ -505,6 +510,7 @@
 
         $("logoutBtn").addEventListener("click", () => {
             localStorage.removeItem("token");
+            localStorage.removeItem("selectedFestivalId");
             window.location.href = "/login";
         });
 
@@ -516,17 +522,13 @@
 
             await loadProfile();
             await loadDashboard();
+            await loadFestivals();
 
-            visitorRefreshTimer = setInterval(() => {
+            refreshTimer = setInterval(() => {
                 const activeView = document.querySelector(".view.active");
 
-                if (activeView && activeView.id === "dashboardView") {
-                    loadDashboard();
-                }
-
-                if (activeView && activeView.id === "visitorsView") {
-                    loadVisitors();
-                }
+                if (activeView?.id === "dashboardView") loadDashboard();
+                if (activeView?.id === "visitorsView") loadVisitors();
             }, 20000);
         }
 

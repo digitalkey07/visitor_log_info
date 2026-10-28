@@ -34,6 +34,27 @@ app.register_blueprint(share_bp)
 @app.route("/")
 def home():
     return render_template("index.html")
+@app.route("/ui/<int:id>", methods=["GET"])
+def get_ui_data(id):
+    with closing(get_db()) as conn:
+        festival = conn.execute("""
+            SELECT *
+            FROM uidata
+            WHERE id = ? AND is_active = 1
+            LIMIT 1
+        """, (id,)).fetchone()
+
+    if festival is None:
+        return {"status": "error", "message": "UI not found"}, 404
+
+    return {
+        "status": "success",
+        **dict(festival)
+    }
+    
+
+
+print("urlMap :", app.url_map, flush=True)
 #======================================
 #MAIN APPLICATION
 #======================================
