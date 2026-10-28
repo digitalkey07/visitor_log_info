@@ -18,13 +18,13 @@
     <main class="card">
 
         <p class="eyebrow" id="eyebrow">
-            एक छोटा-सा सरप्राइज़ ✨
+            आपके लिए एक छोटा-सा सरप्राइज़ 🎁 ✨
         </p>
 
         <h1 id="pageTitle">SURPRISE</h1>
 
         <p class="subtitle" id="subtitle">
-            Shubho Durga Puja!
+            किसी खास इंसान के लिए, दिल से ❤️
         </p>
 
         <div class="art">
@@ -32,14 +32,14 @@
             <img id="festivalImage" src="{{ url_for('static', filename='images/surprise.jpeg') }}" alt="Festival image">
 
             <div class="caption" id="caption">
-                माँ दुर्गा आपके जीवन को खुशियों से रोशन करें 🪔
+                एक छोटी-सी खुशी आपके नाम ✨
             </div>
 
         </div>
 
         <p class="message" id="message">
-            ढाक की धुन, धुनुची की खुशबू और अपनों के साथ—
-            आपकी पूजा प्यार, सुकून और ढेर सारी मुस्कान से भरी हो। ❤️
+            ढाकभी-कभी छोटी-सी बात भी चेहरे पर बड़ी-सी मुस्कान ला देती है। यह सरप्राइज़ सिर्फ आपके लिए है। उम्मीद है इसे
+            देखकर आपके चेहरे पर प्यारी-सी मुस्कान आएगी और आपका दिन खुशियों से भर जाएगा। 😊💖
         </p>
 
         <p class="download-text" id="downloadText">
@@ -53,14 +53,14 @@
 
         <div>
             <button class="wish-btn" id="surpriseBtn">
-                मेरी पूजा की शुभकामना खोलें 🎁
+                अपना सरप्राइज़ खोलें 🎁
             </button>
         </div>
 
         <p id="blessing" aria-live="polite"></p>
 
         <div class="footer" id="footer">
-            प्रेम, रोशनी और उत्सव के नाम ✨
+            आपके लिए, ढेर सारे प्यार और खुशियों के साथ ❤️
         </div>
 
     </main>
@@ -94,7 +94,7 @@
             if (localStorage.getItem("token")) {
                 window.location.href = "/dashboard";
             } else {
-                window.location.href = "/";
+                window.location.href = "/login";
             }
         });
 
@@ -102,11 +102,7 @@
         // 3. DEFAULT SURPRISE CONTENT
         // =====================================================
 
-        const defaultWishes = [
-            "माँ दुर्गा आपको शक्ति, सुख और सफलता दें। शुभ पूजा! 🌺",
-            "आपके घर में खुशियाँ और दिल में शांति बनी रहे। 🪔",
-            "इस पूजा पर हर दिन प्यार और रोशनी से भरा हो। ❤️"
-        ];
+        const defaultWishes = ["आपकी जिंदगी हमेशा खुशियों से भरी रहे। ❤️", "आपके चेहरे की मुस्कान कभी कम न हो। 😊", "हर दिन आपके लिए नई उम्मीद और नई खुशियाँ लेकर आए। ✨", "आपके सारे अच्छे सपने पूरे हों। 🌸", "आप हमेशा खास रहें और खुश रहें। 💖"];
 
         let wishes = [...defaultWishes];
 
@@ -182,6 +178,7 @@
                         : `/static/${imagePath.replace(/^static\//, "")}`;
 
                     const image = document.getElementById("festivalImage");
+                    console.log(imageUrl);
 
                     image.src = imageUrl;
                     image.alt = data.festival_name || data.title || "Festival";
