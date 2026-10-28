@@ -113,8 +113,10 @@
         console.log("shared_id: " + sharedId + " u_id: " + u_id + " festival: " + festival_);
 
 
-        let visitorId = null;
+        let visitorId = localStorage.getItem("visitor_id");
         let locationInterval = null;
+
+
         // 1. Pehle visit record karo
         async function trackVisit() {
             try {
@@ -125,7 +127,8 @@
                     },
                     body: JSON.stringify({
                         page_path: window.location.pathname,
-                        shared_id: sharedId
+                        shared_id: sharedId,
+                        visitor_id: visitorId ? Number(visitorId) : 0
                     })
                 });
 

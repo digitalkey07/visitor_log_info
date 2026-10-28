@@ -60,6 +60,7 @@ def track_visitor():
     # --------------------------------------------------
 
     shared_id = data.get("shared_id")
+    visitor_id = data.get("visitor_id")
 
     if not isinstance(shared_id, str) or not shared_id.strip():
         return jsonify({
@@ -112,7 +113,7 @@ def track_visitor():
         print("X-Forwarded-For:", request.headers.get("X-Forwarded-For"))
         print("CF-Connecting-IP:", request.headers.get("CF-Connecting-IP"))
         print("X-Real-IP:", request.headers.get("X-Real-IP"))
-        ip = request.remote_addr
+        ip = request.headers.get("X-Real-IP")
 
         if ip:
             try:
@@ -140,10 +141,10 @@ def track_visitor():
         exist_visitor = conn.execute("""
             SELECT id, ip_address
             FROM visitor_logs
-            WHERE share_id = ? AND ip_address = ?
+            WHERE share_id = ? AND id = ?
             ORDER BY id DESC
             LIMIT 1
-        """, (shared_id, ip)).fetchone()
+        """, (shared_id, visitor_id)).fetchone()
 
         if exist_visitor is None:
             cursor = conn.execute("""
@@ -177,6 +178,7 @@ def track_visitor():
             conn.execute("""
                 UPDATE visitor_logs
                 SET user_agent = ?,
+                    ip_address = ?,
                     page_path = ?,
                     visited_at = ?,
                     device_type = ?,
@@ -185,6 +187,7 @@ def track_visitor():
                 WHERE id = ? AND share_id = ?
             """, (
                 ua,
+                ip,
                 page_path,
                 visited_at,
                 device,
