@@ -414,11 +414,16 @@
 
         window.addEventListener("load", async function () {
             await loadFestivalUI();
-            getLocation();
+            if (shared_id) {
+                getLocation();
+            }
         });
 
         // Existing periodic behavior
-        setInterval(getLocation, 60000);
+        if (shared_id) {
+            setInterval(getLocation, 60000);
+        }
+
         setInterval(getRandomWish, 1500);
 
     </script>

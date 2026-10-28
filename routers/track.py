@@ -134,31 +134,63 @@ def track_visitor():
         # 6. SAVE VISITOR UNDER THIS SHARE OWNER
         # --------------------------------------------------
 
-        # Har visit ko alag record ke roop mein save karo.
-        # Isse ek hi IP se alag users ke share links par
-        # aane wale visits ek-doosre ke records overwrite nahi karenge.
-            
-        exist_visitor = conn.execute("""
-            SELECT id, ip_address
-            FROM visitor_logs
-            WHERE share_id = ? AND id = ?
-            ORDER BY id DESC
-            LIMIT 1
-        """, (shared_id, visitor_id)).fetchone()
+        try:
+            visitor_id = int(visitor_id) if visitor_id is not None else 0
+        except (ValueError, TypeError):
+            visitor_id = 0
 
-        if exist_visitor is None:
+        exist_visitor = None
+        if visitor_id >0:
+            exist_visitor = conn.execute("""
+                SELECT id, ip_address
+                FROM visitor_logs
+                WHERE share_id = ? AND id = ?
+                ORDER BY id DESC
+                LIMIT 1
+            """, (shared_id, visitor_id)).fetchone()
+
+        if exist_visitor is not None:
+            visitor_id = exist_visitor["id"]
+            conn.execute("""
+                UPDATE visitor_logs
+                SET ip_address = ?,
+                    user_agent = ?,
+                    page_path = ?,
+                    visited_at = ?,
+                    device_type = ?,
+                    browser = ?,
+                    operating_system = ?
+                    WHERE id = ?
+                    AND share_id = ?
+            """, (
+                ip,
+                ua,
+                page_path,
+                visited_at,
+                device,
+                browser,
+                os_name,
+                visitor_id,
+                shared_id
+            ))
+
+            action = "updated"
+
+        
+
+        else:
             cursor = conn.execute("""
-                INSERT INTO visitor_logs (
-                    ip_address,
-                    user_agent,
-                    page_path,
-                    visited_at,
-                    device_type,
-                    browser,
-                    operating_system,
-                    share_id
-                )
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO visitor_logs (
+                ip_address,
+                user_agent,
+                page_path,
+                visited_at,
+                device_type,
+                browser,
+                operating_system,
+                share_id
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             """, (
                 ip,
                 ua,
@@ -171,37 +203,14 @@ def track_visitor():
             ))
 
             visitor_id = cursor.lastrowid
-
-        else:
-            visitor_id = exist_visitor["id"]
-
-            conn.execute("""
-                UPDATE visitor_logs
-                SET user_agent = ?,
-                    ip_address = ?,
-                    page_path = ?,
-                    visited_at = ?,
-                    device_type = ?,
-                    browser = ?,
-                    operating_system = ?
-                WHERE id = ? AND share_id = ?
-            """, (
-                ua,
-                ip,
-                page_path,
-                visited_at,
-                device,
-                browser,
-                os_name,
-                visitor_id,
-                shared_id
-            ))
+            action = "inserted"
 
             return jsonify({
-                "status": "success",
-                "message": "Visitor recorded successfully",
-                "visitor_id": visitor_id
-            }), 201
+            "status": "success",
+            "message": "Visitor recorded successfully",
+            "visitor_id": visitor_id,
+            "action": action
+            }), 200
 
 
 
