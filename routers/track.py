@@ -112,7 +112,7 @@ def track_visitor():
         print("X-Forwarded-For:", request.headers.get("X-Forwarded-For"))
         print("CF-Connecting-IP:", request.headers.get("CF-Connecting-IP"))
         print("X-Real-IP:", request.headers.get("X-Real-IP"))
-        ip = request.remote_addr
+        ip = request.headers.get("CF-Connecting-IP")
 
         if ip:
             try:
@@ -120,10 +120,6 @@ def track_visitor():
             except ValueError:
                 ip = None
 
-        # --------------------------------------------------
-        # 4. GET MAC ADDRESS
-        # --------------------------------------------------
-        
         # --------------------------------------------------
         # 5. DEVICE / BROWSER INFORMATION
         # --------------------------------------------------

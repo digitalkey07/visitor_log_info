@@ -178,7 +178,6 @@
                         : `/static/${imagePath.replace(/^static\//, "")}`;
 
                     const image = document.getElementById("festivalImage");
-                    console.log(imageUrl);
 
                     image.src = imageUrl;
                     image.alt = data.festival_name || data.title || "Festival";
