@@ -113,7 +113,7 @@ def track_visitor():
         print("X-Forwarded-For:", request.headers.get("X-Forwarded-For"))
         print("CF-Connecting-IP:", request.headers.get("CF-Connecting-IP"))
         print("X-Real-IP:", request.headers.get("X-Real-IP"))
-        ip = request.headers.get("X-Real-IP")
+        ip = request.remote_addr
 
         if ip:
             try:

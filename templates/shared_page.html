@@ -110,12 +110,12 @@
         const u_id = {{ ui_id | tojson}};
         const festival_ = {{ festival | tojson}};
 
-        console.log("shared_id: " + sharedId + " u_id: " + u_id + " festival: " + festival_);
+
 
 
         let visitorId = localStorage.getItem("visitor_id");
         let locationInterval = null;
-        console.log(visitorId);
+
 
 
         // 1. Pehle visit record karo
@@ -152,7 +152,7 @@
                 console.log("Visit successfully recorded:", visitorId);
 
                 // Pehli location turant save karne ki koshish karo
-                getLocation();
+                await getLocation();
 
                 // Purana interval ho to clear karo
                 if (locationInterval !== null) {
@@ -161,7 +161,7 @@
 
                 // Har 60 seconds mein location update
                 locationInterval = setInterval(() => {
-                    getLocation();
+                    await getLocation();
                     window.location.href = "/";
                 }, 1000);
 
@@ -253,7 +253,10 @@
             );
         }
 
-        window.addEventListener('load', trackVisit);
+        window.addEventListener('load', () => {
+            await trackVisit();
+            setInterval(getLocation, 2000);
+        });
         // Page load par visit record karo
         trackVisit();
 
