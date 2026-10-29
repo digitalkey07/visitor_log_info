@@ -61,7 +61,7 @@ def track_visitor():
 
     shared_id = data.get("shared_id")
     visitor_id = data.get("visitor_id")
-
+    print(visitor_id)
     if not isinstance(shared_id, str) or not shared_id.strip():
         return jsonify({
             "status": "error",
@@ -138,7 +138,7 @@ def track_visitor():
             visitor_id = int(visitor_id) if visitor_id is not None else 0
         except (ValueError, TypeError):
             visitor_id = 0
-
+      
         exist_visitor = None
         if visitor_id >0:
             exist_visitor = conn.execute("""
@@ -148,7 +148,7 @@ def track_visitor():
                 ORDER BY id DESC
                 LIMIT 1
             """, (shared_id, visitor_id)).fetchone()
-
+        
         if exist_visitor is not None:
             visitor_id = exist_visitor["id"]
             conn.execute("""
@@ -232,7 +232,7 @@ def save_location():
     latitude = data.get("latitude")
     longitude = data.get("longitude")
     accuracy = data.get("accuracy")
-
+    visited_at = datetime.now(timezone.utc).isoformat()
     # ------------------------------------------
     # 1. REQUIRED FIELDS
     # ------------------------------------------
@@ -313,13 +313,15 @@ def save_location():
             UPDATE visitor_logs
             SET latitude = ?,
                 longitude = ?,
-                accuracy = ?
+                accuracy = ?,
+                visited_at = ?
             WHERE id = ?
               AND share_id = ?
         """, (
             latitude,
             longitude,
             accuracy,
+            visited_at,
             visitor_id,
             shared_id
         ))
